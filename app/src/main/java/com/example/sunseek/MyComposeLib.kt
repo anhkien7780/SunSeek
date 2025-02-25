@@ -1,4 +1,4 @@
-package com.example.sunseek.ui.screen
+package com.example.sunseek
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource

@@ -73,9 +73,9 @@ secrets {
 
 dependencies {
     implementation(libs.androidx.navigation.common)
+    implementation(libs.androidx.animation)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.maps.compose)
-    implementation(libs.play.services.maps)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.material3)
     implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -93,7 +94,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     // Retrofit
-    implementation (libs.retrofit)
-    // Retrofit with Scalar Converter
-    implementation (libs.converter.scalars)
+    implementation(libs.retrofit2.converter.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.okhttp)
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+    // Google SDK
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
 }
