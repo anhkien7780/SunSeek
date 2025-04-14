@@ -13,7 +13,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +47,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -64,13 +64,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.OutlinedTextFieldFloatedLabel
 import com.example.sunseek.R
 import com.example.sunseek.model.User
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.AccountViewModel
-import com.example.sunseek.viewmodel.LoginUIState
+import com.example.sunseek.viewmodel.LoadingUIState
+import com.example.sunseek.viewmodel.LocationViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -86,9 +86,10 @@ enum class Screen {
 @Composable
 fun LoginScreen(
     accountViewModel: AccountViewModel,
+    locationViewModel: LocationViewModel,
     onLoginSuccess: () -> Unit,
-    context: Context
 ) {
+    val context: Context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var correctPassword by remember { mutableStateOf("") }
@@ -96,10 +97,11 @@ fun LoginScreen(
     var isEmailValid by remember { mutableStateOf(true) }
     val centerScreen = getScreenCenter()
     val circleX = remember { Animatable(centerScreen) }
+    val right = 300f
     var screen by remember { mutableStateOf(Screen.Login) }
     val coroutineScope = rememberCoroutineScope()
-    val right = 300f
-    var isLoading by remember { mutableStateOf(false) }
+    val accountLoadingUIState by accountViewModel.loadingUIState.collectAsState()
+    val locationLoadingUIState by locationViewModel.loadingUIState.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -128,238 +130,211 @@ fun LoginScreen(
             )
         }
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawCircle(
-                    radius = size.width * 1f,
-                    center = Offset(circleX.value, size.height / 2),
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(242, 154, 119, 100),
-                            Color(247, 222, 212, 100)
-                        ),
-                        start = Offset(0f, 0f), end = Offset(size.width, size.height)
-                    )
-                )
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.sunseek),
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 116.dp)
-                )
-                OutlinedTextFieldFloatedLabel(
-                    modifier = Modifier
-                        .padding(bottom = 16.dp)
-                        .onFocusChanged { focusState ->
-                            if (!focusState.isFocused) {
-                                isEmailValid = if (email.isNotEmpty())
-                                    validateEmail(email)
-                                else
-                                    true
-                            } else if (focusState.isFocused) {
-                                isEmailValid = true
-                            }
-                        },
-                    value = email,
-                    onValueChange = { email = it },
-                    labelText = stringResource(R.string.account),
-                    placeholder = { Text(stringResource(R.string.enter_account)) },
-                    prefix = {
-                        Icon(
-                            Icons.Rounded.AccountCircle,
-                            contentDescription = stringResource(R.string.account_circle)
+        when (accountLoadingUIState) {
+            LoadingUIState.Idle -> Box(modifier = Modifier.fillMaxSize()) {
+                // Draw a circle
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    drawCircle(
+                        radius = size.width * 1f,
+                        center = Offset(circleX.value, size.height / 2),
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(242, 154, 119, 100),
+                                Color(247, 222, 212, 100)
+                            ),
+                            start = Offset(0f, 0f), end = Offset(size.width, size.height)
                         )
-                    },
-                    isError = !isEmailValid
-                )
-                AnimatedVisibility(
-                    screen == Screen.Login || screen == Screen.Register,
-                    enter = fadeIn() + expandVertically(),
-                    exit = shrinkVertically() + fadeOut()
+                    )
+                }
+                // Body
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp)
                 ) {
+                    // Logo
+                    Text(
+                        text = stringResource(R.string.sunseek),
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 116.dp)
+                    )
+                    // Login Input
                     OutlinedTextFieldFloatedLabel(
-                        value = password,
-                        onValueChange = { password = it },
-                        labelText = stringResource(R.string.password),
-                        placeholder = { Text(stringResource(R.string.enter_password)) },
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .onFocusChanged { focusState ->
+                                if (!focusState.isFocused) {
+                                    isEmailValid = if (email.isNotEmpty())
+                                        validateEmail(email)
+                                    else
+                                        true
+                                } else if (focusState.isFocused) {
+                                    isEmailValid = true
+                                }
+                            },
+                        value = email,
+                        onValueChange = { email = it },
+                        labelText = stringResource(R.string.account),
+                        placeholder = { Text(stringResource(R.string.enter_account)) },
                         prefix = {
                             Icon(
-                                Icons.Rounded.Lock,
+                                Icons.Rounded.AccountCircle,
                                 contentDescription = stringResource(R.string.account_circle)
                             )
                         },
-                        suffix = {
-                            IconButton(
-                                onClick = {
-                                    isVisibility = !isVisibility
-                                },
-                                modifier = Modifier.size(20.dp)
-                            ) {
-                                Icon(
-                                    painter = if (!isVisibility) painterResource(R.drawable.visibility_off)
-                                    else painterResource(R.drawable.visibility),
-                                    contentDescription = "Password prefix icon",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = if (!isVisibility) PasswordVisualTransformation()
-                        else VisualTransformation.None
+                        isError = !isEmailValid
                     )
-                }
-                AnimatedVisibility(
-                    screen == Screen.Register,
-                    enter = fadeIn() + expandVertically(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    OutlinedTextFieldFloatedLabel(
-                        modifier = Modifier.padding(top = 16.dp),
-                        value = correctPassword,
-                        onValueChange = { correctPassword = it },
-                        labelText = stringResource(R.string.password),
-                        placeholder = { Text(stringResource(R.string.enter_password_again)) },
-                        prefix = {
-                            Icon(
-                                Icons.Rounded.Lock,
-                                contentDescription = stringResource(R.string.prefix_password_icon)
-                            )
-                        },
-                        suffix = {
-                            IconButton(
-                                onClick = {
-                                    isVisibility = !isVisibility
-                                },
-                                modifier = Modifier.size(20.dp)
-                            ) {
-                                Icon(
-                                    painter = if (!isVisibility) painterResource(R.drawable.visibility_off)
-                                    else painterResource(R.drawable.visibility),
-                                    contentDescription = stringResource(R.string.account_circle),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = if (!isVisibility) PasswordVisualTransformation()
-                        else VisualTransformation.None,
-                        isError = correctPassword != password && correctPassword.isNotEmpty()
-                    )
-                }
-
-                AnimatedVisibility(
-                    screen == Screen.Login,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = 34.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    // Animate the circle
+                    AnimatedVisibility(
+                        screen == Screen.Login || screen == Screen.Register,
+                        enter = fadeIn() + expandVertically(),
+                        exit = shrinkVertically() + fadeOut()
                     ) {
-                        TextButton(
-                            onClick = {
-                                screen = Screen.Register
-                                coroutineScope.launch {
-                                    circleX.animateTo(
-                                        targetValue = circleX.value + right,
-                                        animationSpec = tween(durationMillis = 1000)
+                        OutlinedTextFieldFloatedLabel(
+                            value = password,
+                            onValueChange = { password = it },
+                            labelText = stringResource(R.string.password),
+                            placeholder = { Text(stringResource(R.string.enter_password)) },
+                            prefix = {
+                                Icon(
+                                    Icons.Rounded.Lock,
+                                    contentDescription = stringResource(R.string.account_circle)
+                                )
+                            },
+                            suffix = {
+                                IconButton(
+                                    onClick = {
+                                        isVisibility = !isVisibility
+                                    },
+                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Icon(
+                                        painter = if (!isVisibility) painterResource(R.drawable.visibility_off)
+                                        else painterResource(R.drawable.visibility),
+                                        contentDescription = "Password prefix icon",
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
-                            }
-                        ) {
-                            Text(
-                                stringResource(R.string.sign_up),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontStyle = FontStyle.Italic,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                        TextButton(
-                            onClick = {
-                                screen = Screen.ForgetPassword
-                                coroutineScope.launch {
-                                    circleX.animateTo(
-                                        targetValue = circleX.value - right,
-                                        animationSpec = tween(durationMillis = 1000)
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            visualTransformation = if (!isVisibility) PasswordVisualTransformation()
+                            else VisualTransformation.None
+                        )
+                    }
+                    AnimatedVisibility(
+                        screen == Screen.Register,
+                        enter = fadeIn() + expandVertically(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        OutlinedTextFieldFloatedLabel(
+                            modifier = Modifier.padding(top = 16.dp),
+                            value = correctPassword,
+                            onValueChange = { correctPassword = it },
+                            labelText = stringResource(R.string.password),
+                            placeholder = { Text(stringResource(R.string.enter_password_again)) },
+                            prefix = {
+                                Icon(
+                                    Icons.Rounded.Lock,
+                                    contentDescription = stringResource(R.string.prefix_password_icon)
+                                )
+                            },
+                            suffix = {
+                                IconButton(
+                                    onClick = {
+                                        isVisibility = !isVisibility
+                                    },
+                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Icon(
+                                        painter = if (!isVisibility) painterResource(R.drawable.visibility_off)
+                                        else painterResource(R.drawable.visibility),
+                                        contentDescription = stringResource(R.string.account_circle),
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
-                            }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            visualTransformation = if (!isVisibility) PasswordVisualTransformation()
+                            else VisualTransformation.None,
+                            isError = correctPassword != password && correctPassword.isNotEmpty()
+                        )
+                    }
+                    AnimatedVisibility(
+                        screen == Screen.Login,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(top = 34.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                stringResource(R.string.forget_password),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontStyle = FontStyle.Italic,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
+                            TextButton(
+                                onClick = {
+                                    screen = Screen.Register
+                                    coroutineScope.launch {
+                                        circleX.animateTo(
+                                            targetValue = circleX.value + right,
+                                            animationSpec = tween(durationMillis = 1000)
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    stringResource(R.string.sign_up),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                            TextButton(
+                                onClick = {
+                                    screen = Screen.ForgetPassword
+                                    coroutineScope.launch {
+                                        circleX.animateTo(
+                                            targetValue = circleX.value - right,
+                                            animationSpec = tween(durationMillis = 1000)
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    stringResource(R.string.forget_password),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
                         }
                     }
-                }
-                // Login Button
-                Button(
-                    modifier = Modifier.padding(top = 34.dp),
-                    onClick = {
-                        when (accountViewModel.loginUIState) {
-                            LoginUIState.Failed -> {
-                                Toast.makeText(
-                                    context,
-                                    context.getString(R.string.login_falied_vn),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                isLoading = false
-                                accountViewModel.updateLoginUIState(LoginUIState.Idle)
-                            }
-
-                            LoginUIState.Loading -> {
-                                isLoading = true
-                            }
-
-                            LoginUIState.Idle -> {}
-                        }
-                        when (screen) {
-                            Screen.Login -> {
-                                coroutineScope.launch {
-                                    try {
+                    // Login Button
+                    Button(
+                        modifier = Modifier.padding(top = 34.dp),
+                        onClick = {
+                            when (screen) {
+                                Screen.Login -> {
+                                    coroutineScope.launch {
                                         if (accountViewModel.login(
-                                                context = context,
-                                                user = User(email, password)
+                                                User(email, password),
+                                                context
                                             )
                                         ) {
                                             accountViewModel.updateUsername(username = email)
+                                            locationViewModel.getListLocation(context)
                                             onLoginSuccess()
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                context.getString(R.string.login_falied_vn),
-                                                Toast.LENGTH_SHORT
-                                            ).show()
                                         }
-                                    } catch (ex: Exception) {
-                                        ex.printStackTrace()
-                                        println(context.getString(R.string.login_failed))
                                     }
                                 }
-                            }
 
-                            Screen.Register -> {
-                                coroutineScope.launch {
-                                    try {
-                                        accountViewModel.updateLoginUIState(LoginUIState.Loading)
+                                Screen.Register -> {
+                                    coroutineScope.launch {
                                         val isLoginSuccess =
                                             accountViewModel.register(User(email, password))
                                         if (isLoginSuccess) {
-                                            accountViewModel.updateLoginUIState(
-                                                LoginUIState.Idle
-                                            )
                                             screen = Screen.Login
                                             coroutineScope.launch {
                                                 circleX.animateTo(
@@ -372,46 +347,64 @@ fun LoginScreen(
                                                 context.getString(R.string.register_success),
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                        } else accountViewModel.updateLoginUIState(LoginUIState.Failed)
-                                    } catch (ex: Exception) {
-                                        ex.printStackTrace()
-                                        println(context.getString(R.string.register_failed))
-                                    }
+                                        }
 
+
+                                    }
                                 }
+
+                                Screen.ForgetPassword -> {}
                             }
 
-                            Screen.ForgetPassword -> TODO()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        when (screen) {
+                            Screen.Login -> Text(
+                                stringResource(R.string.sign_in),
+                                style = MaterialTheme.typography.labelLarge
+                            )
+
+                            Screen.Register -> Text(
+                                stringResource(R.string.sign_up),
+                                style = MaterialTheme.typography.labelLarge
+                            )
+
+                            Screen.ForgetPassword -> Text(
+                                stringResource(R.string.send_new_password),
+                                style = MaterialTheme.typography.labelLarge
+                            )
                         }
-
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    when (screen) {
-                        Screen.Login -> Text(
-                            stringResource(R.string.sign_in),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-
-                        Screen.Register -> Text(
-                            stringResource(R.string.sign_up),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-
-                        Screen.ForgetPassword -> Text(
-                            stringResource(R.string.send_new_password),
-                            style = MaterialTheme.typography.labelLarge
-                        )
                     }
+
                 }
 
             }
-            LoadingOverlay(isLoading)
+
+            LoadingUIState.Loading -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .alpha(0.5f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+
+            LoadingUIState.Failed -> {}
+
+            LoadingUIState.Success -> {}
         }
     }
+    when (locationLoadingUIState) {
+        LoadingUIState.Failed -> {}
+        LoadingUIState.Idle -> {}
+        LoadingUIState.Loading -> FullScreenLoading("Tải danh sách địa chỉ")
+        LoadingUIState.Success -> {}
+    }
+
 }
 
 
@@ -420,8 +413,8 @@ fun LoginScreen(
 fun LoginScreenPreView() {
     SunSeekTheme {
         LoginScreen(
-            context = LocalContext.current,
             onLoginSuccess = {}, accountViewModel = AccountViewModel(),
+            locationViewModel = LocationViewModel(),
         )
     }
 }
@@ -440,17 +433,3 @@ fun validateEmail(email: String): Boolean {
     return email.matches(emailRegex)
 }
 
-@Composable
-fun LoadingOverlay(isLoading: Boolean) {
-    if (isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .blur(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-}

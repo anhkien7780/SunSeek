@@ -4,6 +4,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     kotlin("plugin.serialization") version "2.1.0"
     alias(libs.plugins.kotlin.compose)
+    id ("kotlin-kapt")
 }
 
 android {
@@ -102,4 +103,5 @@ dependencies {
     // Google SDK
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    kapt ("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
 }

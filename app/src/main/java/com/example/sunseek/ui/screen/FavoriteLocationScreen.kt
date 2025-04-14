@@ -4,9 +4,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +22,8 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,13 +33,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,27 +50,34 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.Address
+import com.example.sunseek.model.LocationWithID
 import com.example.sunseek.ui.theme.SunSeekTheme
-import com.example.sunseek.viewmodel.FavoriteLocationViewModel
+import com.example.sunseek.viewmodel.LoadingUIState
+import com.example.sunseek.viewmodel.LocationViewModel
+import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
-object SelectLocation
+object FavoriteLocation
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoriteLocationScreen(
-    favoriteLocationViewModel: FavoriteLocationViewModel,
+    locationViewModel: LocationViewModel,
+    openWeatherViewModel: OpenWeatherViewModel,
     onBack: () -> Unit,
     onAddressSelected: () -> Unit,
+    onAddLocation: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     var openAlertDialog by remember { mutableStateOf(false) }
     var selectedAddress by remember { mutableStateOf<Address?>(null) }
+    val listLocation by locationViewModel.listLocation.collectAsState()
+    val weatherUIState by openWeatherViewModel.weatherUIState.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,22 +104,42 @@ fun FavoriteLocationScreen(
             )
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 5.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(favoriteLocationViewModel.listLocation, key = {
-                it.id
-            }) { item ->
-                LocationBar(
-                    address = item,
-                    imageSource = R.drawable.hoanghon,
-                    onClick = { onAddressSelected() }) {
-                    openAlertDialog = !openAlertDialog
-                    selectedAddress = item
+        when (listLocation.isEmpty()) {
+            true -> EmptyBody {
+                onAddLocation()
+            }
+
+            false -> LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(horizontal = 5.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(listLocation) { item ->
+                    LocationBar(
+                        address = item.toAddress(),
+                        imageSource = R.drawable.hoanghon,
+                        onClick = {
+                            openWeatherViewModel.getWeatherReportByCoordinates(
+                                item.latitude,
+                                item.longitude,
+                                item.toAddress()
+                            )
+                        }, onConfigurationClick = { openAlertDialog = !openAlertDialog })
+                    selectedAddress = item.toAddress()
                 }
+            }
+        }
+        when (weatherUIState) {
+            LoadingUIState.Idle -> {}
+            LoadingUIState.Loading -> FullScreenLoading("Tải thông tin thời tiết", innerPadding)
+            LoadingUIState.Failed -> {}
+            LoadingUIState.Success -> {}
+        }
+        LaunchedEffect(weatherUIState) {
+            if (weatherUIState == LoadingUIState.Success) {
+                onAddressSelected()
+                openWeatherViewModel.setIdle()
             }
         }
         when {
@@ -121,16 +156,48 @@ fun FavoriteLocationScreen(
     }
 }
 
+@Composable
+private fun EmptyBody(
+    modifier: Modifier = Modifier,
+    onAddLocation: () -> Unit,
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(R.string.empty_list),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(Modifier.size(5.dp))
+        Button(
+            onClick = { onAddLocation() },
+            colors = ButtonDefaults.buttonColors(
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Text(
+                stringResource(R.string.add_location),
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+}
+
 @Preview
 @Composable
 fun FavoriteLocationScreenPreview() {
     SunSeekTheme {
         FavoriteLocationScreen(
-            favoriteLocationViewModel = viewModel(),
             onBack = {},
             onAddressSelected = {},
             onEdit = {},
-            onDelete = {},
+            onDelete = {}, locationViewModel = LocationViewModel(),
+            onAddLocation = {},
+            openWeatherViewModel = OpenWeatherViewModel()
         )
     }
 }
@@ -211,6 +278,34 @@ fun LocationBarPreview() {
 }
 
 @Composable
+fun FullScreenLoading(
+    title: String = "",
+    innerPadding: PaddingValues = PaddingValues()
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .alpha(0.5f)
+            .padding(innerPadding), contentAlignment = Alignment.Center
+    ) {
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(modifier = Modifier.padding(bottom = 5.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+
+    }
+}
+
+@Composable
 fun CustomDialog(
     title: String? = null,
     supportText: String? = null,
@@ -269,3 +364,8 @@ fun CustomDialogPreview() {
             )
     }
 }
+
+fun LocationWithID.toAddress() = Address(
+    detailedAddress = this.name.split('%')[0],
+    streetAddress = this.name.split('%')[1]
+)

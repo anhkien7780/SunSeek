@@ -52,8 +52,10 @@ import androidx.compose.ui.unit.sp
 import com.example.sunseek.R
 import com.example.sunseek.model.Description
 import com.example.sunseek.model.Information
+import com.example.sunseek.model.WeatherReport
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.AccountViewModel
+import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.text.Typography.bullet
@@ -71,15 +73,17 @@ val normalWeatherColor = Color(185, 120, 0)
 
 @Composable
 fun HomeScreen(
+    accountViewModel: AccountViewModel,
+    weatherViewModel: OpenWeatherViewModel,
     onSettingButtonClick: () -> Unit,
     onFavoriteLocationsButtonClick: () -> Unit,
-    onSelectLocationButtonClick: () -> Unit,
-    accountViewModel: AccountViewModel,
+    onMapButtonClick: () -> Unit,
     onLogoutSuccess: () -> Unit
 ) {
     val username by accountViewModel.username
     var openDialogState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val weatherReport = remember { weatherViewModel.weatherReport.value }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
         BottomAppBar(
@@ -90,7 +94,7 @@ fun HomeScreen(
                     .weight(1f)
                     .clickable { },
                 painterResourceID = R.drawable.settings,
-                contentDescription = "Setting",
+                contentDescription = stringResource(R.string.setting),
                 buttonText = stringResource(R.string.setting)
             ) { onSettingButtonClick() }
 
@@ -99,18 +103,20 @@ fun HomeScreen(
                     .weight(1f)
                     .clickable { },
                 painterResourceID = R.drawable.favorite_border,
-                contentDescription = "Favorite Locations",
+                contentDescription = stringResource(R.string.favorite_locations),
                 buttonText = stringResource(R.string.my_favorite_locations)
             ) { onFavoriteLocationsButtonClick() }
 
             MyCustomButton(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { },
+                    .clickable {
+                        onMapButtonClick()
+                    },
                 painterResourceID = R.drawable.map,
-                contentDescription = "Map",
+                contentDescription = stringResource(R.string.map),
                 buttonText = stringResource(R.string.select_location)
-            ) { onSelectLocationButtonClick() }
+            ) { onMapButtonClick() }
 
         }
     }) { innerPadding ->
@@ -154,68 +160,82 @@ fun HomeScreen(
                 }
 
             }
-            // Image
-            item {
-                Box(
-                    modifier = Modifier
-                        .size(352.dp)
-                        .clip(CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.hoanghon),
-                        contentDescription = "",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(alignment = Alignment.BottomCenter)
-                            .background(color = MaterialTheme.colorScheme.tertiaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
+            when {
+                weatherReport != null -> {
+                    // Image, Location, and Address
+                    item {
+                        // Image
+                        Box(
                             modifier = Modifier
-                                .size(height = 60.dp, width = 273.dp)
-                                .clickable {},
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                                .size(352.dp)
+                                .clip(CircleShape),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                painter = painterResource(R.drawable.image),
-                                contentDescription = "Change Image Button",
-                                modifier = Modifier.padding(end = 21.dp)
+                            Image(
+                                painter = painterResource(R.drawable.hoanghon),
+                                contentDescription = stringResource(R.string.location_image),
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
                             )
-                            Text(
-                                stringResource(R.string.change_image),
-                                style = MaterialTheme.typography.labelMedium
-                            )
+                            // Change image button
+                            Box(
+                                modifier = Modifier
+                                    .align(alignment = Alignment.BottomCenter)
+                                    .background(color = MaterialTheme.colorScheme.tertiaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .size(height = 60.dp, width = 273.dp)
+                                        .clickable {},
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.image),
+                                        contentDescription = "Change Image Button",
+                                        modifier = Modifier.padding(end = 21.dp)
+                                    )
+                                    Text(
+                                        stringResource(R.string.change_image),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
+                            }
+                        }
+                        // Address information
+                        Text(
+                            weatherReport.detailAddress,
+                            modifier = Modifier.padding(top = 30.dp),
+                            style = MaterialTheme.typography.displaySmall
+                        )
+                        // Address
+                        Text(
+                            "Địa chỉ: ${weatherReport.streetAddress}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+                    }
+                    // Information bar
+                    items(weatherReport.toListWeatherInfo()) { weatherInfo ->
+                        InformationBar(
+                            modifier = Modifier.padding(bottom = 5.dp),
+                            informationName = stringResource(weatherInfo.informationName),
+                            weatherInfo = weatherInfo.weatherInfo,
+                            weatherLevel = weatherInfo.weatherLevel,
+                        )
+                    }
+                }
+                else -> {
+                    item {
+                        EmptyWeatherReportBody {
+                            onFavoriteLocationsButtonClick()
                         }
                     }
                 }
-                // Location name and address
-                Text(
-                    "Hồ Tây",
-                    modifier = Modifier.padding(top = 30.dp),
-                    style = MaterialTheme.typography.displaySmall
-                )
-                Text(
-                    "Địa chỉ: Tây Hồ, Hà Nội, Việt Nam",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
             }
-            // Information bar
-            items(listWeatherInfo) { weatherInfo ->
-                InformationBar(
-                    modifier = Modifier.padding(bottom = 5.dp),
-                    informationName = stringResource(weatherInfo.informationName),
-                    weatherInfo = weatherInfo.weatherInfo,
-                    weatherLevel = weatherInfo.weatherLevel,
 
-                    )
-            }
             // Information description bar
             item {
                 Text(
@@ -333,7 +353,42 @@ fun MyCustomButton(
         )
     }
 }
-//----------------------------------------------------------------------------------------------------
+
+@Composable
+fun EmptyWeatherReportBody(
+    onFavoriteLocationsButtonClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.height(200.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(R.string.empty_home_description),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(Modifier.padding(vertical = 10.dp))
+        Button(
+            onClick = {
+                onFavoriteLocationsButtonClick()
+            },
+            modifier = Modifier
+                .padding(10.dp)
+                .height(40.dp)
+                .clip(shape = RoundedCornerShape(10.dp)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+        ) {
+            Text(
+                text = stringResource(R.string.navigate_to_favorite_screen),
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+
+}
 
 @Composable
 fun InformationBar(
@@ -447,17 +502,6 @@ fun ExpandableInformationBar(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ExpandableInformationBarPreview() {
-    SunSeekTheme {
-        ExpandableInformationBar(
-            informationName = stringResource(R.string.temperature),
-            information = stringResource(R.string.temperature_description)
-        )
-    }
-}
-
 sealed class WeatherLevel {
     data object Good : WeatherLevel()
     data object Normal : WeatherLevel()
@@ -471,33 +515,66 @@ val notes = listOf(
     "Thời gian: Đến địa điểm ngắm hoàng hôn sớm hơn ít nhất 20-30 phút để chọn vị trí và thư giãn."
 )
 
-val listWeatherInfo = listOf(
-    Information(
-        R.string.temperature,
-        weatherInfo = "25℃",
-        weatherLevel = WeatherLevel.Good
-    ),
-    Information(
-        R.string.air_condition,
-        weatherInfo = "190",
-        weatherLevel = WeatherLevel.Bad,
-    ),
-    Information(
-        R.string.cloud,
-        weatherInfo = "Nhiều mây",
-        weatherLevel = WeatherLevel.Bad,
-    ),
-    Information(
-        R.string.rain,
-        weatherInfo = "Không mưa",
-        weatherLevel = WeatherLevel.Good,
-    ),
-    Information(
-        R.string.humidity,
-        weatherInfo = "80%",
-        weatherLevel = WeatherLevel.Normal,
+fun WeatherReport.toListWeatherInfo(): List<Information> {
+    val temperatureInfo = "${temp.toInt()}℃"
+    val temperatureLevel = when {
+        temp < 15 -> WeatherLevel.Bad
+        temp in 15f..30f -> WeatherLevel.Good
+        else -> WeatherLevel.Normal
+    }
+    val airConditionLevel = when (aqi) {
+        in 1..2 -> WeatherLevel.Good
+        3 -> WeatherLevel.Normal
+        in 4..5 -> WeatherLevel.Bad
+        else -> WeatherLevel.Normal
+    }
+    val cloudLevel = when {
+        cloud < 30 -> WeatherLevel.Good
+        cloud in 30..70 -> WeatherLevel.Normal
+        else -> WeatherLevel.Bad
+    }
+
+    val rainLevel = if (rain == 0f) WeatherLevel.Good else WeatherLevel.Bad
+    val rainInfo = if (rain == 0f) "Không mưa" else "${rain}mm"
+
+    val humidityLevel = when {
+        humidity < 30 -> WeatherLevel.Bad
+        humidity in 30..70 -> WeatherLevel.Good
+        else -> WeatherLevel.Normal
+    }
+
+    return listOf(
+        Information(
+            R.string.temperature,
+            weatherInfo = temperatureInfo,
+            weatherLevel = temperatureLevel
+        ),
+        Information(
+            R.string.air_condition,
+            weatherInfo = aqi.toString(),
+            weatherLevel = airConditionLevel
+        ),
+        Information(
+            R.string.cloud,
+            weatherInfo = when {
+                cloud < 30 -> "Ít mây"
+                cloud in 30..70 -> "Trời quang mây"
+                else -> "Nhiều mây"
+            },
+            weatherLevel = cloudLevel
+        ),
+        Information(
+            R.string.rain,
+            weatherInfo = rainInfo,
+            weatherLevel = rainLevel
+        ),
+        Information(
+            R.string.humidity,
+            weatherInfo = "$humidity%",
+            weatherLevel = humidityLevel
+        )
     )
-)
+}
 
 val listDescription = listOf(
     Description(
@@ -521,3 +598,4 @@ val listDescription = listOf(
         information = R.string.humidity_description
     )
 )
+

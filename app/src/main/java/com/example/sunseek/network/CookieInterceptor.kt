@@ -14,12 +14,12 @@ class CookieInterceptor(private val context: Context): Interceptor {
         val cookie = runBlocking {
             context.cookieDataStore.data.map { it[PreferenceKeys.COOKIE]}.firstOrNull()
         }
-        Log.d("Cookie gửi đi: ", "$cookie")
         val newRequest = originalRequest.newBuilder().apply {
             cookie?.let {
                 addHeader("Cookie", it)
             }
         }.build()
+        Log.d("CookieInterceptor", "Cookie: $cookie")
         return chain.proceed(newRequest)
     }
 
