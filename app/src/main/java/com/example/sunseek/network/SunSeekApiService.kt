@@ -11,6 +11,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -49,8 +50,8 @@ interface SunSeekApiService {
     @POST("users/locations/update/{id}")
     suspend fun updateLocation(@Path("id") locationID: Int): Response<Unit>
 
-    @POST("users/locations/delete/{id}")
-    suspend fun addLocation(@Path("id") locationID: Int): Response<Unit>
+    @DELETE("users/locations/delete/{id}")
+    suspend fun deleteLocation(@Path("id") locationID: Int): Response<Unit>
 
 }
 

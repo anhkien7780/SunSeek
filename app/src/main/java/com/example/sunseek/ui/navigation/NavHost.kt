@@ -68,7 +68,6 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
                 onAddLocation = {
                     navController.navigate(Map)
                 },
-                onDelete = {}
             )
         }
         composable<Map> {

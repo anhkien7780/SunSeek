@@ -47,7 +47,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sunseek.R
-import com.example.sunseek.model.Address
 import com.example.sunseek.model.Location
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.LoadingUIState
@@ -84,7 +83,7 @@ fun MapScreen(
     var openDialogState by remember { mutableStateOf(false) }
     var location by remember { mutableStateOf(mapViewModel.location.value) }
     val cameraPositionState = rememberCameraPositionState()
-    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+    var lastLocation by remember { mutableStateOf<LatLng?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -93,9 +92,9 @@ fun MapScreen(
                 locationViewModel.getLastLocation(
                     fusedLocationProviderClient = fusedLocationClient,
                     onLocationReceived = { latLng ->
-                        currentLocation = latLng
+                        lastLocation = latLng
                         cameraPositionState.position =
-                            CameraPosition.fromLatLngZoom(currentLocation ?: LatLng(1.0, 1.0), 15f)
+                            CameraPosition.fromLatLngZoom(lastLocation ?: LatLng(1.0, 1.0), 15f)
                     })
             }
         }
@@ -106,9 +105,9 @@ fun MapScreen(
         locationViewModel.getLastLocation(
             fusedLocationProviderClient = fusedLocationClient,
             onLocationReceived = { latLng ->
-                currentLocation = latLng
+                lastLocation = latLng
                 cameraPositionState.position =
-                    CameraPosition.fromLatLngZoom(currentLocation ?: LatLng(1.0, 1.0), 15f)
+                    CameraPosition.fromLatLngZoom(lastLocation ?: LatLng(1.0, 1.0), 15f)
             },
             onPermissionDenied = {
                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -143,12 +142,12 @@ fun MapScreen(
                                     location =
                                         listAddress.find { it.name.split('%')[0] == addressInput }
                                     if (location != null) {
-                                        currentLocation = LatLng(
+                                        lastLocation = LatLng(
                                             location!!.latitude, location!!.longitude
                                         )
                                         cameraPositionState.position =
                                             CameraPosition.fromLatLngZoom(
-                                                currentLocation ?: LatLng(
+                                                lastLocation ?: LatLng(
                                                     1.0, 1.0
                                                 ), 15f
                                             )
@@ -182,7 +181,7 @@ fun MapScreen(
             GoogleMap(
                 modifier = Modifier.fillMaxSize(), cameraPositionState = cameraPositionState
             ) {
-                currentLocation?.let { MarkerState(position = it) }?.let {
+                lastLocation?.let { MarkerState(position = it) }?.let {
                     Marker(
                         state = it,
                         title = "Vị trí của bạn",
@@ -208,8 +207,8 @@ fun MapScreen(
                 )
             }
         }
-        when (openDialogState) {
-            true -> AlertDialog(
+        when{
+            openDialogState -> AlertDialog(
                 onDismissRequest = { openDialogState = false },
                 confirmButton = {
                     Row(
@@ -248,7 +247,6 @@ fun MapScreen(
                                         ) { openDialogState = false }
                                         locationViewModel.getListLocation(context)
                                     }
-
                                 }
                             }, colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
@@ -284,8 +282,6 @@ fun MapScreen(
                         )
                     }
                 })
-
-            false -> {}
         }
 
         when (locationUIState) {

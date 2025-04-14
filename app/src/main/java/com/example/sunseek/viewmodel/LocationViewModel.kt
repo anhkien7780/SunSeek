@@ -24,6 +24,7 @@ class LocationViewModel : ViewModel() {
     private var _listLocation = MutableStateFlow<List<LocationWithID>>(emptyList())
     private val _loadingUIState: MutableStateFlow<LoadingUIState> =
         MutableStateFlow(LoadingUIState.Idle)
+    var selectedLocationID = MutableStateFlow(-1)
     val loadingUIState = _loadingUIState.asStateFlow()
     val listLocation = _listLocation.asStateFlow()
     private val _isLocationListEmpty = MutableStateFlow(true)
@@ -89,6 +90,7 @@ class LocationViewModel : ViewModel() {
 
     }
 
+
     suspend fun addAddress(context: Context, location: Location, onSuccess: () -> Unit) {
         try {
             _loadingUIState.value = LoadingUIState.Loading
@@ -117,6 +119,27 @@ class LocationViewModel : ViewModel() {
             _loadingUIState.value = LoadingUIState.Idle
         }
 
+    }
+
+    suspend fun deleteAddress(context: Context, id: Int) {
+        try {
+            _loadingUIState.value = LoadingUIState.Loading
+            val response = SunSeekApi.retrofitService.deleteLocation(id)
+            if (response.isSuccessful) {
+                val updateList = _listLocation.value.filterNot { it.id == id }
+                _listLocation.value = updateList
+                _loadingUIState.value = LoadingUIState.Success
+                Toast.makeText(context, "Xóa địa chỉ thành công", Toast.LENGTH_SHORT).show()
+            } else{
+                _loadingUIState.value = LoadingUIState.Failed
+                Toast.makeText(context, "Xóa địa chỉ thất bại", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _loadingUIState.value = LoadingUIState.Failed
+        } finally {
+            _loadingUIState.value = LoadingUIState.Idle
+        }
     }
 }
 

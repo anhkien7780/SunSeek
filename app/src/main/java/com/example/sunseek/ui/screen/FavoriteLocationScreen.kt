@@ -39,12 +39,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +59,7 @@ import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.LoadingUIState
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -72,8 +75,10 @@ fun FavoriteLocationScreen(
     onAddressSelected: () -> Unit,
     onAddLocation: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit,
 ) {
+    val locationUIState by locationViewModel.loadingUIState.collectAsState()
+    val context = LocalContext.current
+    val deleteLocationScope = rememberCoroutineScope()
     var openAlertDialog by remember { mutableStateOf(false) }
     var selectedAddress by remember { mutableStateOf<Address?>(null) }
     val listLocation by locationViewModel.listLocation.collectAsState()
@@ -125,7 +130,10 @@ fun FavoriteLocationScreen(
                                 item.longitude,
                                 item.toAddress()
                             )
-                        }, onConfigurationClick = { openAlertDialog = !openAlertDialog })
+                        }, onConfigurationClick = {
+                            locationViewModel.selectedLocationID.value = item.id
+                            openAlertDialog = !openAlertDialog
+                        })
                     selectedAddress = item.toAddress()
                 }
             }
@@ -149,10 +157,22 @@ fun FavoriteLocationScreen(
                     supportText = selectedAddress?.streetAddress,
                     onDismissRequest = { openAlertDialog = false },
                     onEdit = { onEdit() },
-                    onDelete = { onDelete() }
+                    onDelete = {
+                        deleteLocationScope.launch {
+                            locationViewModel.deleteAddress(context, locationViewModel.selectedLocationID.value)
+                            openAlertDialog = false
+                        }
+                    }
                 )
             }
         }
+        when(locationUIState){
+            LoadingUIState.Failed -> {}
+            LoadingUIState.Idle -> {}
+            LoadingUIState.Loading -> FullScreenLoading(title = "Xóa địa chỉ")
+            LoadingUIState.Success -> {}
+        }
+
     }
 }
 
@@ -194,8 +214,7 @@ fun FavoriteLocationScreenPreview() {
         FavoriteLocationScreen(
             onBack = {},
             onAddressSelected = {},
-            onEdit = {},
-            onDelete = {}, locationViewModel = LocationViewModel(),
+            onEdit = {}, locationViewModel = LocationViewModel(),
             onAddLocation = {},
             openWeatherViewModel = OpenWeatherViewModel()
         )
