@@ -80,7 +80,7 @@ fun HomeScreen(
     onMapButtonClick: () -> Unit,
     onLogoutSuccess: () -> Unit
 ) {
-    val username by accountViewModel.username
+    val username by accountViewModel.email
     var openDialogState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val weatherReport = remember { weatherViewModel.weatherReport.value }

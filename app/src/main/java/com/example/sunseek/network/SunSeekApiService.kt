@@ -1,9 +1,12 @@
 package com.example.sunseek.network
 
 import com.example.sunseek.MyApplication
+import com.example.sunseek.model.EmailRequest
 import com.example.sunseek.model.Location
 import com.example.sunseek.model.LocationWithID
+import com.example.sunseek.model.ResetPasswordRequest
 import com.example.sunseek.model.User
+import com.example.sunseek.model.VerifyCodeRequest
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -53,8 +56,15 @@ interface SunSeekApiService {
     @DELETE("users/locations/delete/{id}")
     suspend fun deleteLocation(@Path("id") locationID: Int): Response<Unit>
 
-}
+    @POST("users/forgot_password")
+    suspend fun forgotPasswordRequest(@Body email: EmailRequest): Response<Unit>
 
+    @POST("users/verify_code")
+    suspend fun verifyCodeRequest(@Body request: VerifyCodeRequest): Response<Boolean>
+
+    @POST("users/reset_password")
+    suspend fun resetPasswordRequest(@Body resetInfo: ResetPasswordRequest): Response<Unit>
+}
 
 
 object SunSeekApi {

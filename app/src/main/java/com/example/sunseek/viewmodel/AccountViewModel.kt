@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.sunseek.MyApplication
 import com.example.sunseek.R
+import com.example.sunseek.model.EmailRequest
 import com.example.sunseek.model.User
 import com.example.sunseek.network.SunSeekApi
 import com.example.sunseek.network.clearCookie
@@ -19,40 +20,51 @@ sealed class LoadingUIState {
     data object Loading : LoadingUIState()
     data object Failed : LoadingUIState()
     data object Idle : LoadingUIState()
-    data object Success: LoadingUIState()
+    data object Success : LoadingUIState()
 }
 
 class AccountViewModel : ViewModel() {
-    private var _username = mutableStateOf("")
-    val username: State<String> = _username
+    private var _email = mutableStateOf("")
+    val email: State<String> = _email
     private val _loadingUIState: MutableStateFlow<LoadingUIState> =
         MutableStateFlow(LoadingUIState.Idle)
     val loadingUIState = _loadingUIState.asStateFlow()
     fun updateUsername(username: String) {
-        _username.value = username
+        _email.value = username
     }
 
-    suspend fun register(user: User): Boolean {
+    suspend fun register(context: Context, user: User): Boolean {
         try {
             _loadingUIState.value = LoadingUIState.Loading
             val response = SunSeekApi.retrofitService.registerUser(user)
             if (response.isSuccessful) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.register_success_vn),
+                    Toast.LENGTH_SHORT
+                ).show()
+                _loadingUIState.value = LoadingUIState.Success
                 return true
             }
+            Toast.makeText(
+                context,
+                context.getString(R.string.register_failed_vn),
+                Toast.LENGTH_SHORT
+            ).show()
             _loadingUIState.value = LoadingUIState.Failed
-
             return false
         } catch (ex: Exception) {
             ex.printStackTrace()
             Toast.makeText(
-                MyApplication.appContext,
+                context,
                 MyApplication.appContext.getString(R.string.register_failed_vn),
                 Toast.LENGTH_LONG
             ).show()
-            return false
         } finally {
             _loadingUIState.value = LoadingUIState.Idle
         }
+
+        return false
     }
 
     suspend fun login(user: User, context: Context): Boolean {
@@ -103,6 +115,23 @@ class AccountViewModel : ViewModel() {
             return false
         } finally {
 
+        }
+    }
+
+    suspend fun forgetPasswordRequest(emailRequest: EmailRequest, onRequestSuccess: () -> Unit) {
+        try {
+            _loadingUIState.value = LoadingUIState.Loading
+            val response = SunSeekApi.retrofitService.forgotPasswordRequest(emailRequest)
+            if (response.isSuccessful) {
+                _email.value = emailRequest.email
+                _loadingUIState.value = LoadingUIState.Success
+                onRequestSuccess()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _loadingUIState.value = LoadingUIState.Failed
+        } finally {
+            _loadingUIState.value = LoadingUIState.Idle
         }
     }
 }

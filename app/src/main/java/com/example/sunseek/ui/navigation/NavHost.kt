@@ -5,6 +5,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.sunseek.ui.screen.ChangePassword
+import com.example.sunseek.ui.screen.ChangePasswordScreen
 import com.example.sunseek.ui.screen.FavoriteLocation
 import com.example.sunseek.ui.screen.FavoriteLocationScreen
 import com.example.sunseek.ui.screen.Home
@@ -13,7 +15,10 @@ import com.example.sunseek.ui.screen.Login
 import com.example.sunseek.ui.screen.LoginScreen
 import com.example.sunseek.ui.screen.Map
 import com.example.sunseek.ui.screen.MapScreen
+import com.example.sunseek.ui.screen.VerifyCode
+import com.example.sunseek.ui.screen.VerifyCodeScreen
 import com.example.sunseek.viewmodel.AccountViewModel
+import com.example.sunseek.viewmodel.ForgetPasswordViewModel
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.MapViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
@@ -28,6 +33,7 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
     val locationViewModel: LocationViewModel = viewModel()
     val mapViewModel: MapViewModel = viewModel()
     val openWeatherViewModel: OpenWeatherViewModel = viewModel()
+    val forgetPasswordViewModel: ForgetPasswordViewModel = viewModel()
     NavHost(navController = navController, startDestination = Login) {
         composable<Login> {
             LoginScreen(
@@ -36,7 +42,8 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
                 onLoginSuccess = {
                     navController.navigate(Home)
                     navController.clearBackStack<Login>()
-                }
+                },
+                onForgetPasswordRequestSuccess = { navController.navigate(VerifyCode) }
             )
         }
         composable<Home> {
@@ -51,8 +58,11 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
                     navController.navigate(Map)
                 },
                 onLogoutSuccess = {
-                    navController.navigate(Login)
-                    navController.clearBackStack<Home>()
+                    navController.navigate(Login) {
+                        popUpTo(0){
+                            inclusive = true
+                        }
+                    }
                 },
             )
         }
@@ -77,6 +87,26 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
                 onBack = { navController.popBackStack() },
                 mapViewModel = mapViewModel
             )
+        }
+        composable<VerifyCode> {
+            VerifyCodeScreen(onBack = { navController.popBackStack() },
+                forgetPasswordViewModel = forgetPasswordViewModel,
+                accountViewModel = accountViewModel,
+
+            ) {
+                navController.navigate(ChangePassword)
+            }
+        }
+        composable<ChangePassword> {
+            ChangePasswordScreen(onBack = {navController.popBackStack()},
+                forgetPasswordViewModel = forgetPasswordViewModel
+            ) {
+                navController.navigate(Login){
+                    popUpTo(0){
+                        inclusive = true
+                    }
+                }
+            }
         }
     }
 }

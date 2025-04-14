@@ -73,6 +73,7 @@ Lượng mưa ảnh hưởng trực tiếp đến tầm nhìn hoàng hôn:\n
     <string name="account_circle">Account circle</string>
     <string name="prefix_password_icon">Prefix password icon</string>
     <string name="register_success">Register Success</string>
+    <string name="register_success_vn">Đăng ký tài khoản thành công</string>
     <string name="register_failed">Register failed</string>
     <string name="register_failed_vn">Đăng ký thất bại</string>
     <string name="change_image">Đổi ảnh</string>
@@ -91,4 +92,14 @@ Lượng mưa ảnh hưởng trực tiếp đến tầm nhìn hoàng hôn:\n
     <string name="accept">accept</string>
     <string name="wrong_password_or_account">Sai thông tin đăng nhập</string>
     <string name="collect_location_info_falied">Lấy thông tin địa chỉ thất bại</string>
+    <string name="verify_code">Nhập mã xác thực</string>
+    <string name="change_password">Đổi mật khẩu</string>
+    <string name="enter_new_password">Nhập mật khẩu mới</string>
+    <string name="confirm_new_password">Nhập lại mật khẩu mới</string>
+    <string name="create_new_password">Tạo mật khẩu mới</string>
+    <string name="verifying">Đang xác thực</string>
+    <string name="code_incorrect">Sai mã xác thực</string>
+    <string name="confirm_success">Xác minh thành công</string>
+    <string name="change_password_success">Đổi mật khẩu thành công</string>
+    <string name="change_password_failed">Đổi mật khẩu thất bại</string>
 </resources>

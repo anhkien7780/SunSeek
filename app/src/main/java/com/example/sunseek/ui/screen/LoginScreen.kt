@@ -66,6 +66,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sunseek.OutlinedTextFieldFloatedLabel
 import com.example.sunseek.R
+import com.example.sunseek.model.EmailRequest
 import com.example.sunseek.model.User
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.AccountViewModel
@@ -88,6 +89,7 @@ fun LoginScreen(
     accountViewModel: AccountViewModel,
     locationViewModel: LocationViewModel,
     onLoginSuccess: () -> Unit,
+    onForgetPasswordRequestSuccess: () -> Unit
 ) {
     val context: Context = LocalContext.current
     var email by remember { mutableStateOf("") }
@@ -332,9 +334,12 @@ fun LoginScreen(
 
                                 Screen.Register -> {
                                     coroutineScope.launch {
-                                        val isLoginSuccess =
-                                            accountViewModel.register(User(email, password))
-                                        if (isLoginSuccess) {
+
+                                        if (accountViewModel.register(
+                                                context,
+                                                User(email, password)
+                                            )
+                                        ) {
                                             screen = Screen.Login
                                             coroutineScope.launch {
                                                 circleX.animateTo(
@@ -348,12 +353,16 @@ fun LoginScreen(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-
-
                                     }
                                 }
 
-                                Screen.ForgetPassword -> {}
+                                Screen.ForgetPassword -> {
+                                    coroutineScope.launch {
+                                        accountViewModel.forgetPasswordRequest(EmailRequest(email)) {
+                                            onForgetPasswordRequestSuccess()
+                                        }
+                                    }
+                                }
                             }
 
                         },
@@ -414,7 +423,7 @@ fun LoginScreenPreView() {
     SunSeekTheme {
         LoginScreen(
             onLoginSuccess = {}, accountViewModel = AccountViewModel(),
-            locationViewModel = LocationViewModel(),
+            locationViewModel = LocationViewModel(), onForgetPasswordRequestSuccess = {},
         )
     }
 }
