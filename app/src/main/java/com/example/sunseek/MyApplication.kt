@@ -1,12 +1,13 @@
 package com.example.sunseek
 
 import android.app.Application
+import android.content.Context
 
 class MyApplication:  Application(){
     companion object {
         lateinit var instance: MyApplication
             private set
-        val appContext get() = instance.applicationContext
+        val appContext: Context get() = instance.applicationContext
     }
 
     override fun onCreate() {

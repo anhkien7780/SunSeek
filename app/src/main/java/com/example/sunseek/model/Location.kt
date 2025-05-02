@@ -8,3 +8,8 @@ data class Location(
     val longitude: Double,
     val name: String
 )
+//
+//fun Location.toAddress(): Address = Address(
+//    detailedAddress = this.name.substringBefore(",") ?: "null",
+//    streetAddress = this.name.substringAfter(",") ?: "null",
+//)

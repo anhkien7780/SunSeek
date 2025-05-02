@@ -9,7 +9,7 @@
     <string name="forget_password">Quên mật khẩu</string>
     <string name="sign_in">Đăng nhập</string>
     <string name="enter_password_again">Nhập lại mật khẩu</string>
-    <string name="send_new_password">Gửi mật khẩu mới</string>
+    <string name="send_verify_code">Gửi mã xắc thực</string>
     <string name="select_location">Chọn địa chỉ</string>
     <string name="my_favorite_locations">Địa chỉ yêu thích</string>
     <string name="setting">Cài đặt</string>
@@ -102,4 +102,11 @@ Lượng mưa ảnh hưởng trực tiếp đến tầm nhìn hoàng hôn:\n
     <string name="confirm_success">Xác minh thành công</string>
     <string name="change_password_success">Đổi mật khẩu thành công</string>
     <string name="change_password_failed">Đổi mật khẩu thất bại</string>
+    <string name="selected_location">Vị trí đang chọn</string>
+    <string name="tip_1">Chọn địa điểm: Tìm nơi có tầm nhìn thoáng, không bị che khuất bởi cây cối hay tòa nhà.</string>
+    <string name="tip_2">Theo dõi thời tiết: Kiểm tra dự báo chi tiết ít nhất vài giờ trước khi đi.</string>
+    <string name="tip_3">Trang phục: Luôn mang thêm một lớp áo để điều chỉnh theo thời tiết.</string>
+    <string name="tip_4">Thời gian: Đến địa điểm ngắm hoàng hôn sớm hơn ít nhất 20-30 phút để chọn vị trí và thư giãn.</string>
+    <string name="take_photo">Chụp ảnh</string>
+    <string name="get_photo_from_collection">Chọn ảnh từ thư viện</string>
 </resources>

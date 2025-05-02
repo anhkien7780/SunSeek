@@ -9,7 +9,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-private const val BASE_URL = "https://maps.googleapis.com/"
+private const val BASE_URL = "https://api.geoapify.com/v1/geocode/"
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
@@ -21,17 +21,18 @@ private val geoApiRetrofit =
         .build()
 
 interface GeocodingApiService{
-    @GET("maps/api/geocode/json")
+    @GET("search")
     suspend fun getCoordinates(
-        @Query("address") address: String,
-        @Query("key") apiKey: String,
+        @Query("text") address: String,
+        @Query("apiKey") apiKey: String,
     ): GeocodingResponse
 
-    @GET("maps/api/geocode/json")
-    suspend fun getFormattedAddress(
-        @Query("latlng") latLng: String,
-        @Query("key") apiKey: String,
-    ): ReverseGeoResponse
+    @GET("reverse")
+    suspend fun reverseCoordinate(
+        @Query("lat") lat: String,
+        @Query("lon") lon: String,
+        @Query("apiKey") apiKey: String,
+    ): ReverseGeocodeResponse
 }
 
 object GeocodingApi{
@@ -41,36 +42,35 @@ object GeocodingApi{
 }
 
 @JsonClass(generateAdapter = true)
-data class RespondedLocation(
-    val lat: Double,
-    val lng: Double
-)
-
-@JsonClass(generateAdapter = true)
-data class Geometry(
-    val location: RespondedLocation
-)
-
-@JsonClass(generateAdapter = true)
-data class Result(
-    @Json(name = "formatted_address") val formattedAddress: String,
-    val geometry: Geometry
-)
-
-@JsonClass(generateAdapter = true)
 data class GeocodingResponse(
-    val results: List<Result>?,
-    @Json(name = "status") val status: String,
-    @Json(name = "error_message") val errorMessage: String? = null
+    @Json(name = "type") val type: String,
+    @Json(name = "features") val features: List<GeocodeFeature>
 )
 
 @JsonClass(generateAdapter = true)
-data class ReverseGeoResponse(
-    val results: List<ReverseGeoResponseResult>?,
-    val status: String
+data class GeocodeFeature(
+    @Json(name = "properties") val properties: GeocodeProperties
 )
 
 @JsonClass(generateAdapter = true)
-data class ReverseGeoResponseResult(
-    @Json(name = "formatted_address") val formattedAddress: String
+data class GeocodeProperties(
+    @Json(name = "lon") val lon: Double,
+    @Json(name = "lat") val lat: Double,
+    @Json(name = "formatted") val formattedName: String
+)
+
+@JsonClass(generateAdapter = true)
+data class ReverseGeocodeResponse(
+    @Json(name = "type") val type: String,
+    @Json(name = "features") val features: List<ReverseGeocodeFeature>
+)
+
+@JsonClass(generateAdapter = true)
+data class ReverseGeocodeFeature(
+    @Json(name = "properties") val properties: ReverseGeocodeProperties
+)
+
+@JsonClass(generateAdapter = true)
+data class ReverseGeocodeProperties(
+    @Json(name = "formatted") val formattedName: String
 )

@@ -14,14 +14,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,13 +51,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sunseek.R
-import com.example.sunseek.model.Location
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.LoadingUIState
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.MapViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -79,9 +83,10 @@ fun MapScreen(
     val scope = rememberCoroutineScope()
     val locationUIState by locationViewModel.loadingUIState.collectAsState()
     var addressInput by remember { mutableStateOf("") }
+    val currentLocation = mapViewModel.currentLocation.collectAsState()
     val localManager = LocalFocusManager.current
     var openDialogState by remember { mutableStateOf(false) }
-    var location by remember { mutableStateOf(mapViewModel.location.value) }
+    val location by mapViewModel.location.collectAsState()
     val cameraPositionState = rememberCameraPositionState()
     var lastLocation by remember { mutableStateOf<LatLng?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -93,9 +98,11 @@ fun MapScreen(
                     fusedLocationProviderClient = fusedLocationClient,
                     onLocationReceived = { latLng ->
                         lastLocation = latLng
+                        mapViewModel.setCurrentLocation(context, latLng)
                         cameraPositionState.position =
                             CameraPosition.fromLatLngZoom(lastLocation ?: LatLng(1.0, 1.0), 15f)
-                    })
+                    }
+                )
             }
         }
     }
@@ -105,6 +112,7 @@ fun MapScreen(
         locationViewModel.getLastLocation(
             fusedLocationProviderClient = fusedLocationClient,
             onLocationReceived = { latLng ->
+                mapViewModel.setCurrentLocation(context, latLng)
                 lastLocation = latLng
                 cameraPositionState.position =
                     CameraPosition.fromLatLngZoom(lastLocation ?: LatLng(1.0, 1.0), 15f)
@@ -116,7 +124,35 @@ fun MapScreen(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(), topBar = {
+        modifier = Modifier.fillMaxSize(),
+        floatingActionButtonPosition = FabPosition.End,
+        floatingActionButton = {
+            OutlinedIconButton(
+                modifier = Modifier.padding(bottom = 60.dp, end = 10.dp),
+                colors = IconButtonDefaults.outlinedIconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                onClick = {
+                    scope.launch {
+                        currentLocation.value?.let {
+                            lastLocation = LatLng(it.latitude, it.longitude)
+                            cameraPositionState.animate(
+                                update = CameraUpdateFactory.newLatLng(
+                                    LatLng(
+                                        it.latitude,
+                                        it.longitude
+                                    )
+                                )
+                            )
+                        }
+                    }
+                }
+            ) {
+                Icon(imageVector = Icons.Outlined.Place, contentDescription = "Vị trí hiện tại")
+            }
+        },
+        topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -139,18 +175,21 @@ fun MapScreen(
                             // Search location button
                             IconButton(
                                 onClick = {
-                                    location =
-                                        listAddress.find { it.name.split('%')[0] == addressInput }
-                                    if (location != null) {
-                                        lastLocation = LatLng(
-                                            location!!.latitude, location!!.longitude
-                                        )
-                                        cameraPositionState.position =
-                                            CameraPosition.fromLatLngZoom(
-                                                lastLocation ?: LatLng(
-                                                    1.0, 1.0
-                                                ), 15f
+                                    scope.launch {
+                                        mapViewModel.getLocation(context, addressInput)
+                                        location?.let {
+                                            LatLng(
+                                                it.latitude,
+                                                it.longitude
                                             )
+                                        }?.let {
+                                            lastLocation = it
+                                            CameraUpdateFactory.newLatLng(it)
+                                        }?.let {
+                                            cameraPositionState.animate(
+                                                update = it
+                                            )
+                                        }
                                     }
                                 }) {
                                 Icon(
@@ -179,12 +218,24 @@ fun MapScreen(
         }) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             GoogleMap(
-                modifier = Modifier.fillMaxSize(), cameraPositionState = cameraPositionState
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    lastLocation = latLng
+                    scope.launch {
+                        mapViewModel.getAddressName(
+                            context,
+                            lon = latLng.longitude.toString(),
+                            lat = latLng.latitude.toString()
+                        )
+
+                    }
+                }
             ) {
                 lastLocation?.let { MarkerState(position = it) }?.let {
                     Marker(
                         state = it,
-                        title = "Vị trí của bạn",
+                        title = stringResource(R.string.selected_location),
                     )
                 }
             }
@@ -207,7 +258,7 @@ fun MapScreen(
                 )
             }
         }
-        when{
+        when {
             openDialogState -> AlertDialog(
                 onDismissRequest = { openDialogState = false },
                 confirmButton = {
@@ -240,12 +291,21 @@ fun MapScreen(
                         Button(
                             onClick = {
                                 scope.launch {
-                                    location?.let {
-                                        locationViewModel.addAddress(
-                                            context,
-                                            it
-                                        ) { openDialogState = false }
+                                    if (mapViewModel.isCurrentLocation()) {
+                                        currentLocation.value?.let {
+                                            locationViewModel.addAddress(context, it) {
+                                                openDialogState = false
+                                            }
+                                        }
                                         locationViewModel.getListLocation(context)
+                                    } else {
+                                        location?.let {
+                                            locationViewModel.addAddress(
+                                                context,
+                                                it
+                                            ) { openDialogState = false }
+                                            locationViewModel.getListLocation(context)
+                                        }
                                     }
                                 }
                             }, colors = ButtonDefaults.buttonColors(
@@ -306,9 +366,3 @@ fun SelectLocationScreenPreview() {
         )
     }
 }
-
-
-val listAddress = listOf(
-    Location(21.0580708, 105.8031793, name = "Hồ Tây%Tây Hồ, Hà Nội, Việt Nam"),
-    Location(20.9409726, 106.2418541, name = "Hải Dương%Hải Dương")
-)

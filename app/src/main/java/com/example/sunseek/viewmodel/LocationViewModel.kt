@@ -73,6 +73,7 @@ class LocationViewModel : ViewModel() {
             val response = SunSeekApi.retrofitService.getListLocation()
             if (response.isSuccessful) {
                 _listLocation.value = response.body()!!
+                Log.d("List location received", "${_listLocation.value}")
                 _loadingUIState.value = LoadingUIState.Success
             } else {
                 Toast.makeText(

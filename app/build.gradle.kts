@@ -104,4 +104,6 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     kapt ("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+    // Image handle
+    implementation ("io.coil-kt:coil-compose:2.4.0")
 }

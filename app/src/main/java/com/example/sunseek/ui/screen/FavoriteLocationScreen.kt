@@ -385,6 +385,6 @@ fun CustomDialogPreview() {
 }
 
 fun LocationWithID.toAddress() = Address(
-    detailedAddress = this.name.split('%')[0],
-    streetAddress = this.name.split('%')[1]
+    detailedAddress = this.name.split(',')[0],
+    streetAddress = this.name
 )

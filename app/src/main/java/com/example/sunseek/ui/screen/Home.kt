@@ -1,5 +1,9 @@
 package com.example.sunseek.ui.screen
 
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,22 +43,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.sunseek.R
-import com.example.sunseek.model.Description
-import com.example.sunseek.model.Information
-import com.example.sunseek.model.WeatherReport
-import com.example.sunseek.ui.theme.SunSeekTheme
+import com.example.sunseek.model.listDescription
+import com.example.sunseek.model.notes
+import com.example.sunseek.model.toListWeatherInfo
 import com.example.sunseek.viewmodel.AccountViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
@@ -81,9 +87,24 @@ fun HomeScreen(
     onLogoutSuccess: () -> Unit
 ) {
     val username by accountViewModel.email
-    var openDialogState by remember { mutableStateOf(false) }
+    var openLogoutDialog by remember { mutableStateOf(false) }
+    var openGetImageDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val weatherReport = remember { weatherViewModel.weatherReport.value }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUri = uri
+        bitmap = null
+    }
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bmp ->
+        bitmap = bmp
+        imageUri = null
+    }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
         BottomAppBar(
@@ -91,8 +112,7 @@ fun HomeScreen(
         ) {
             MyCustomButton(
                 modifier = Modifier
-                    .weight(1f)
-                    .clickable { },
+                    .weight(1f),
                 painterResourceID = R.drawable.settings,
                 contentDescription = stringResource(R.string.setting),
                 buttonText = stringResource(R.string.setting)
@@ -100,8 +120,7 @@ fun HomeScreen(
 
             MyCustomButton(
                 modifier = Modifier
-                    .weight(1f)
-                    .clickable { },
+                    .weight(1f),
                 painterResourceID = R.drawable.favorite_border,
                 contentDescription = stringResource(R.string.favorite_locations),
                 buttonText = stringResource(R.string.my_favorite_locations)
@@ -109,10 +128,7 @@ fun HomeScreen(
 
             MyCustomButton(
                 modifier = Modifier
-                    .weight(1f)
-                    .clickable {
-                        onMapButtonClick()
-                    },
+                    .weight(1f),
                 painterResourceID = R.drawable.map,
                 contentDescription = stringResource(R.string.map),
                 buttonText = stringResource(R.string.select_location)
@@ -130,83 +146,26 @@ fun HomeScreen(
         ) {
             // Account Button
             item {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(44.dp)
-                            .clip(shape = CircleShape)
-                            .background(color = MaterialTheme.colorScheme.primaryContainer)
-                            .clickable {
-                                openDialogState = !openDialogState
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = stringResource(R.string.account_button),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Text(
-                        "Xin chào $username",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                AvatarButton(modifier = Modifier.fillMaxWidth(), username = username) {
+                    openLogoutDialog = !openLogoutDialog
                 }
-
             }
             when {
                 weatherReport != null -> {
                     // Image, Location, and Address
                     item {
                         // Image
-                        Box(
-                            modifier = Modifier
-                                .size(352.dp)
-                                .clip(CircleShape),
-                            contentAlignment = Alignment.Center
+                        ImagePicker(
+                            imageUri = imageUri,
+                            bitmap = bitmap,
                         ) {
-                            Image(
-                                painter = painterResource(R.drawable.hoanghon),
-                                contentDescription = stringResource(R.string.location_image),
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                            // Change image button
-                            Box(
-                                modifier = Modifier
-                                    .align(alignment = Alignment.BottomCenter)
-                                    .background(color = MaterialTheme.colorScheme.tertiaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .size(height = 60.dp, width = 273.dp)
-                                        .clickable {},
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.image),
-                                        contentDescription = "Change Image Button",
-                                        modifier = Modifier.padding(end = 21.dp)
-                                    )
-                                    Text(
-                                        stringResource(R.string.change_image),
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                }
-                            }
+                            openGetImageDialog = it
                         }
                         // Address information
                         Text(
                             weatherReport.detailAddress,
                             modifier = Modifier.padding(top = 30.dp),
+                            textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.displaySmall
                         )
                         // Address
@@ -227,6 +186,7 @@ fun HomeScreen(
                         )
                     }
                 }
+
                 else -> {
                     item {
                         EmptyWeatherReportBody {
@@ -276,9 +236,9 @@ fun HomeScreen(
         }
         // Logout Dialog
         when {
-            openDialogState -> {
+            openLogoutDialog -> {
                 AlertDialog(
-                    onDismissRequest = { openDialogState = false },
+                    onDismissRequest = { openLogoutDialog = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     confirmButton = {
@@ -322,6 +282,51 @@ fun HomeScreen(
                     title = {
                         Text(text = username, style = MaterialTheme.typography.headlineSmall)
                     }
+                )
+            }
+
+            openGetImageDialog -> {
+                AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    onDismissRequest = {
+                        openGetImageDialog = false
+                    },
+                    title = {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            TextButton(
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                ),
+                                onClick = {
+                                    pickImageLauncher.launch("image/*")
+                                    openGetImageDialog = false
+                                },
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.get_photo_from_collection),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                            TextButton(
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                ),
+                                onClick = {
+                                    takePictureLauncher.launch(null)
+                                    openGetImageDialog = false
+                                },
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.take_photo),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {},
                 )
             }
         }
@@ -440,17 +445,6 @@ fun InformationBar(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun InformationBarPreview() {
-    SunSeekTheme {
-        InformationBar(
-            informationName = "Nhiệt độ",
-            weatherInfo = "25℃",
-            weatherLevel = WeatherLevel.Normal
-        )
-    }
-}
 
 @Composable
 fun ExpandableInformationBar(
@@ -502,100 +496,111 @@ fun ExpandableInformationBar(
     }
 }
 
+@Composable
+fun AvatarButton(modifier: Modifier = Modifier, username: String, onClick: (Boolean) -> Unit) {
+    var state by remember { mutableStateOf(false) }
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(end = 10.dp)
+                .size(44.dp)
+                .clip(shape = CircleShape)
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .clickable(onClick = {
+                    state = !state
+                    onClick(!state)
+                }),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.AccountCircle,
+                contentDescription = stringResource(R.string.account_button),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+        Text(
+            "Xin chào $username",
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+@Composable
+fun ImagePicker(
+    modifier: Modifier = Modifier,
+    imageUri: Uri? = null,
+    bitmap: Bitmap? = null,
+    onClickStateChange: (Boolean) -> Unit
+) {
+    Box(
+        modifier = modifier
+            .size(352.dp)
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        when {
+            imageUri != null -> {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUri),
+                    contentDescription = stringResource(R.string.location_image),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            bitmap != null -> {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = stringResource(R.string.location_image),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            else -> Image(
+                painter = painterResource(R.drawable.hoanghon),
+                contentDescription = stringResource(R.string.location_image),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        // Change image button
+        Box(
+            modifier = Modifier
+                .align(alignment = Alignment.BottomCenter)
+                .background(color = MaterialTheme.colorScheme.tertiaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier
+                    .size(height = 60.dp, width = 273.dp)
+                    .clickable {
+                        onClickStateChange(true)
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.image),
+                    contentDescription = "Change Image Button",
+                    modifier = Modifier.padding(end = 21.dp)
+                )
+                Text(
+                    stringResource(R.string.change_image),
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        }
+    }
+}
+
 sealed class WeatherLevel {
     data object Good : WeatherLevel()
     data object Normal : WeatherLevel()
     data object Bad : WeatherLevel()
 }
 
-val notes = listOf(
-    "Chọn địa điểm: Tìm nơi có tầm nhìn thoáng, không bị che khuất bởi cây cối hay tòa nhà.",
-    "Theo dõi thời tiết: Kiểm tra dự báo chi tiết ít nhất vài giờ trước khi đi.",
-    "Trang phục: Luôn mang thêm một lớp áo để điều chỉnh theo thời tiết.",
-    "Thời gian: Đến địa điểm ngắm hoàng hôn sớm hơn ít nhất 20-30 phút để chọn vị trí và thư giãn."
-)
-
-fun WeatherReport.toListWeatherInfo(): List<Information> {
-    val temperatureInfo = "${temp.toInt()}℃"
-    val temperatureLevel = when {
-        temp < 15 -> WeatherLevel.Bad
-        temp in 15f..30f -> WeatherLevel.Good
-        else -> WeatherLevel.Normal
-    }
-    val airConditionLevel = when (aqi) {
-        in 1..2 -> WeatherLevel.Good
-        3 -> WeatherLevel.Normal
-        in 4..5 -> WeatherLevel.Bad
-        else -> WeatherLevel.Normal
-    }
-    val cloudLevel = when {
-        cloud < 30 -> WeatherLevel.Good
-        cloud in 30..70 -> WeatherLevel.Normal
-        else -> WeatherLevel.Bad
-    }
-
-    val rainLevel = if (rain == 0f) WeatherLevel.Good else WeatherLevel.Bad
-    val rainInfo = if (rain == 0f) "Không mưa" else "${rain}mm"
-
-    val humidityLevel = when {
-        humidity < 30 -> WeatherLevel.Bad
-        humidity in 30..70 -> WeatherLevel.Good
-        else -> WeatherLevel.Normal
-    }
-
-    return listOf(
-        Information(
-            R.string.temperature,
-            weatherInfo = temperatureInfo,
-            weatherLevel = temperatureLevel
-        ),
-        Information(
-            R.string.air_condition,
-            weatherInfo = aqi.toString(),
-            weatherLevel = airConditionLevel
-        ),
-        Information(
-            R.string.cloud,
-            weatherInfo = when {
-                cloud < 30 -> "Ít mây"
-                cloud in 30..70 -> "Trời quang mây"
-                else -> "Nhiều mây"
-            },
-            weatherLevel = cloudLevel
-        ),
-        Information(
-            R.string.rain,
-            weatherInfo = rainInfo,
-            weatherLevel = rainLevel
-        ),
-        Information(
-            R.string.humidity,
-            weatherInfo = "$humidity%",
-            weatherLevel = humidityLevel
-        )
-    )
-}
-
-val listDescription = listOf(
-    Description(
-        informationName = R.string.temperature,
-        information = R.string.temperature_description
-    ),
-    Description(
-        informationName = R.string.air_condition,
-        information = R.string.air_conditional_description
-    ),
-    Description(
-        informationName = R.string.cloud,
-        information = R.string.cloud_description
-    ),
-    Description(
-        informationName = R.string.rain,
-        information = R.string.rain_description
-    ),
-    Description(
-        informationName = R.string.humidity,
-        information = R.string.humidity_description
-    )
-)
 

@@ -334,7 +334,6 @@ fun LoginScreen(
 
                                 Screen.Register -> {
                                     coroutineScope.launch {
-
                                         if (accountViewModel.register(
                                                 context,
                                                 User(email, password)
@@ -358,7 +357,7 @@ fun LoginScreen(
 
                                 Screen.ForgetPassword -> {
                                     coroutineScope.launch {
-                                        accountViewModel.forgetPasswordRequest(EmailRequest(email)) {
+                                        accountViewModel.forgetPasswordRequest(context, EmailRequest(email)) {
                                             onForgetPasswordRequestSuccess()
                                         }
                                     }
@@ -383,7 +382,7 @@ fun LoginScreen(
                             )
 
                             Screen.ForgetPassword -> Text(
-                                stringResource(R.string.send_new_password),
+                                stringResource(R.string.send_verify_code),
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }

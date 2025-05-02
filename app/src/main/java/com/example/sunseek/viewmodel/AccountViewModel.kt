@@ -118,14 +118,18 @@ class AccountViewModel : ViewModel() {
         }
     }
 
-    suspend fun forgetPasswordRequest(emailRequest: EmailRequest, onRequestSuccess: () -> Unit) {
+    suspend fun forgetPasswordRequest(context: Context, emailRequest: EmailRequest, onRequestSuccess: () -> Unit) {
         try {
             _loadingUIState.value = LoadingUIState.Loading
             val response = SunSeekApi.retrofitService.forgotPasswordRequest(emailRequest)
             if (response.isSuccessful) {
                 _email.value = emailRequest.email
+                Toast.makeText(context, "Gửi xác minh thành công", Toast.LENGTH_SHORT).show()
                 _loadingUIState.value = LoadingUIState.Success
                 onRequestSuccess()
+            }else{
+                _loadingUIState.value = LoadingUIState.Failed
+                Toast.makeText(context, "Gửi xác minh thất bại", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             e.printStackTrace()
