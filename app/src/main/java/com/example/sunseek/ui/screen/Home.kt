@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ParagraphStyle
@@ -61,6 +63,7 @@ import com.example.sunseek.model.listDescription
 import com.example.sunseek.model.notes
 import com.example.sunseek.model.toListWeatherInfo
 import com.example.sunseek.viewmodel.AccountViewModel
+import com.example.sunseek.viewmodel.LoadingUIState
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -86,6 +89,8 @@ fun HomeScreen(
     onMapButtonClick: () -> Unit,
     onLogoutSuccess: () -> Unit
 ) {
+    val context = LocalContext.current
+    val loadingUIState by accountViewModel.loadingUIState.collectAsState()
     val username by accountViewModel.email
     var openLogoutDialog by remember { mutableStateOf(false) }
     var openGetImageDialog by remember { mutableStateOf(false) }
@@ -234,7 +239,7 @@ fun HomeScreen(
                 )
             }
         }
-        // Logout Dialog
+        // Dialog
         when {
             openLogoutDialog -> {
                 AlertDialog(
@@ -248,10 +253,11 @@ fun HomeScreen(
                         ) {
                             Button(
                                 onClick = {
+                                    openLogoutDialog = false
                                     scope.launch {
                                         try {
                                             val isLogoutSuccess =
-                                                accountViewModel.logout()
+                                                accountViewModel.logout(context = context)
                                             if (isLogoutSuccess) {
                                                 onLogoutSuccess()
                                             }
@@ -328,6 +334,11 @@ fun HomeScreen(
                     },
                     confirmButton = {},
                 )
+            }
+        }
+        when{
+            loadingUIState == LoadingUIState.Loading ->{
+                FullScreenLoading()
             }
         }
     }

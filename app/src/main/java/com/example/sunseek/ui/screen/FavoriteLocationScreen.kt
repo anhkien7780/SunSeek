@@ -302,25 +302,33 @@ fun FullScreenLoading(
     innerPadding: PaddingValues = PaddingValues()
 ) {
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .alpha(0.5f)
-            .padding(innerPadding), contentAlignment = Alignment.Center
+            .clip(shape = RoundedCornerShape(10.dp))
+            .background(color = MaterialTheme.colorScheme.surfaceVariant)
+            .padding(innerPadding), contentAlignment = Alignment.Center,
     ) {
-        Column(
-            Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            CircularProgressIndicator(modifier = Modifier.padding(bottom = 5.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
+        CircularProgressIndicatorWithText(title = title)
+    }
+}
 
-
+@Composable
+fun CircularProgressIndicatorWithText(
+    modifier: Modifier = Modifier,
+    title: String
+){
+    Column(
+        modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(modifier = Modifier.padding(bottom = 5.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 

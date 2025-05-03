@@ -19,8 +19,12 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
-private const val ip = "192.168.1.9"
-private const val BASE_URL = "http://${ip}:8080"
+// Local host
+//private const val ip = "192.168.1.9"
+//private const val BASE_URL = "http://${ip}:8080"
+
+// Render host
+private const val BASE_URL = "https://sunseek-server.onrender.com/"
 
 private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
@@ -49,9 +53,6 @@ interface SunSeekApiService {
 
     @POST("users/locations/add")
     suspend fun addLocation(@Body location: Location): Response<Unit>
-
-    @POST("users/locations/update/{id}")
-    suspend fun updateLocation(@Path("id") locationID: Int): Response<Unit>
 
     @DELETE("users/locations/delete/{id}")
     suspend fun deleteLocation(@Path("id") locationID: Int): Response<Unit>
