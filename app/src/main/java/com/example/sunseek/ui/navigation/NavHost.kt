@@ -74,7 +74,6 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
                 onAddressSelected = {
                     navController.navigate(Home)
                 },
-                onEdit = {},
                 onAddLocation = {
                     navController.navigate(Map)
                 },

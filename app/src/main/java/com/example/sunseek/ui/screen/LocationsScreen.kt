@@ -19,9 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -74,7 +75,6 @@ fun FavoriteLocationScreen(
     onBack: () -> Unit,
     onAddressSelected: () -> Unit,
     onAddLocation: () -> Unit,
-    onEdit: () -> Unit,
 ) {
     val locationUIState by locationViewModel.loadingUIState.collectAsState()
     val context = LocalContext.current
@@ -156,17 +156,19 @@ fun FavoriteLocationScreen(
                     title = selectedAddress?.detailedAddress,
                     supportText = selectedAddress?.streetAddress,
                     onDismissRequest = { openAlertDialog = false },
-                    onEdit = { onEdit() },
                     onDelete = {
                         deleteLocationScope.launch {
-                            locationViewModel.deleteAddress(context, locationViewModel.selectedLocationID.value)
+                            locationViewModel.deleteAddress(
+                                context,
+                                locationViewModel.selectedLocationID.value
+                            )
                             openAlertDialog = false
                         }
                     }
                 )
             }
         }
-        when(locationUIState){
+        when (locationUIState) {
             LoadingUIState.Failed -> {}
             LoadingUIState.Idle -> {}
             LoadingUIState.Loading -> FullScreenLoading(title = "Xóa địa chỉ")
@@ -213,8 +215,7 @@ fun FavoriteLocationScreenPreview() {
     SunSeekTheme {
         FavoriteLocationScreen(
             onBack = {},
-            onAddressSelected = {},
-            onEdit = {}, locationViewModel = LocationViewModel(),
+            onAddressSelected = {}, locationViewModel = LocationViewModel(),
             onAddLocation = {},
             openWeatherViewModel = OpenWeatherViewModel()
         )
@@ -273,7 +274,7 @@ fun LocationBar(
             modifier = Modifier.padding(end = 10.dp)
         ) {
             Icon(
-                painter = painterResource(R.drawable.pending),
+                imageVector = Icons.Outlined.Delete,
                 contentDescription = stringResource(R.string.pending_button),
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -307,7 +308,8 @@ fun FullScreenLoading(
             .alpha(0.5f)
             .clip(shape = RoundedCornerShape(10.dp))
             .background(color = MaterialTheme.colorScheme.surfaceVariant)
-            .padding(innerPadding), contentAlignment = Alignment.Center,
+            .padding(innerPadding),
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicatorWithText(title = title)
     }
@@ -317,7 +319,7 @@ fun FullScreenLoading(
 fun CircularProgressIndicatorWithText(
     modifier: Modifier = Modifier,
     title: String
-){
+) {
     Column(
         modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -338,7 +340,6 @@ fun CustomDialog(
     supportText: String? = null,
     onDismissRequest: () -> Unit,
     onDelete: () -> Unit,
-    onEdit: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = { onDismissRequest() },
@@ -356,25 +357,52 @@ fun CustomDialog(
             }
         },
         confirmButton = {
-            Row {
-                Button(onClick = { onDelete() }) {
-                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = "Edit Button")
-                    Text(
-                        stringResource(R.string.delete),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                Button(onClick = { onEdit() }) {
-                    Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit Button")
-                    Text(
-                        stringResource(R.string.edit_information),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-            }
+            MyCustomButton(
+                onClick = { onDelete() },
+                painter = painterResource(R.drawable.check_circle),
+                text = stringResource(R.string.confirm),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                contentDescription = stringResource(R.string.confirm),
+            )
+
         },
+        dismissButton = {
+            MyCustomButton(
+                onClick = { onDismissRequest() },
+                painter = painterResource(R.drawable.cancel),
+                text = stringResource(R.string.cancel),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+                contentDescription = stringResource(R.string.cancel),
+            )
+        }
     )
+}
+
+@Composable
+fun MyCustomButton(
+    onClick: () -> Unit,
+    painter: Painter,
+    text: String,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    contentDescription: String
+) {
+    Button(onClick = { onClick() }, colors = colors) {
+        Icon(
+            painter = painter,
+            contentDescription = contentDescription
+        )
+        Spacer(Modifier.size(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+        )
+    }
 }
 
 @Preview
@@ -386,9 +414,7 @@ fun CustomDialogPreview() {
             supportText = "Bạn muốn thay đổi địa chỉ?",
             onDismissRequest = {},
             onDelete = {},
-            onEdit = {},
-
-            )
+        )
     }
 }
 

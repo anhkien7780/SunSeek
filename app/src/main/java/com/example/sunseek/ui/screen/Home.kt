@@ -55,12 +55,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.sunseek.R
+import com.example.sunseek.model.Description
+import com.example.sunseek.model.WeatherLevel
 import com.example.sunseek.model.listDescription
-import com.example.sunseek.model.notes
 import com.example.sunseek.model.toListWeatherInfo
 import com.example.sunseek.viewmodel.AccountViewModel
 import com.example.sunseek.viewmodel.LoadingUIState
@@ -90,6 +92,7 @@ fun HomeScreen(
     onLogoutSuccess: () -> Unit
 ) {
     val context = LocalContext.current
+    val notes = Description.getInformationTips(context)
     val loadingUIState by accountViewModel.loadingUIState.collectAsState()
     val username by accountViewModel.email
     var openLogoutDialog by remember { mutableStateOf(false) }
@@ -608,10 +611,17 @@ fun ImagePicker(
     }
 }
 
-sealed class WeatherLevel {
-    data object Good : WeatherLevel()
-    data object Normal : WeatherLevel()
-    data object Bad : WeatherLevel()
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen(
+        accountViewModel = AccountViewModel(),
+        weatherViewModel = OpenWeatherViewModel(),
+        onSettingButtonClick = {},
+        onFavoriteLocationsButtonClick = {},
+        onMapButtonClick = {},
+        onLogoutSuccess = {}
+    )
 }
 
 

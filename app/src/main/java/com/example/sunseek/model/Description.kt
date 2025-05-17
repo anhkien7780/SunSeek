@@ -1,20 +1,24 @@
 package com.example.sunseek.model
 
-import com.example.sunseek.MyApplication
+import android.content.Context
 import com.example.sunseek.R
 
 data class Description(
     val informationName: Int,
     val information: Int
-)
-
-
-val notes = listOf(
-    MyApplication.appContext.getString(R.string.tip_1),
-    MyApplication.appContext.getString(R.string.tip_2),
-    MyApplication.appContext.getString(R.string.tip_3),
-    MyApplication.appContext.getString(R.string.tip_4)
-)
+) {
+    companion object {
+        fun getInformationTips(context: Context): List<String> {
+            val notes = listOf(
+                context.getString(R.string.tip_1),
+                context.getString(R.string.tip_2),
+                context.getString(R.string.tip_3),
+                context.getString(R.string.tip_4)
+            )
+            return notes
+        }
+    }
+}
 
 
 val listDescription = listOf(

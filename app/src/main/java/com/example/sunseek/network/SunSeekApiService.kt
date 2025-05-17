@@ -20,7 +20,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 // Local host
-//private const val ip = "192.168.1.9"
+//private const val ip = "192.168.1.8"
 //private const val BASE_URL = "http://${ip}:8080"
 
 // Render host

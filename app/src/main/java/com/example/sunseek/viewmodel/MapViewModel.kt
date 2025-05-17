@@ -1,6 +1,7 @@
 package com.example.sunseek.viewmodel
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,12 +19,8 @@ class MapViewModel : ViewModel() {
     val currentLocation = MutableStateFlow<Location?>(null)
     private val _isCurrentLocation = MutableStateFlow(true)
     private val _isLoading: MutableStateFlow<LoadingUIState> = MutableStateFlow(LoadingUIState.Idle)
-    val isLoading = _isLoading.asStateFlow()
     private val geocodeAPIKey = BuildConfig.GEOAPIFY_API_KEY
 
-    fun setLocation(location: Location){
-        _location.value = location
-    }
 
     suspend fun getLocation(context: Context, address: String) {
         try {
@@ -40,6 +37,7 @@ class MapViewModel : ViewModel() {
                     latitude = properties.lat,
                     name = properties.formattedName
                 )
+                Log.d("Địa điểm nhận được: ", _location.value.toString())
                 _isCurrentLocation.value = false
                 _isLoading.value = LoadingUIState.Success
             }
