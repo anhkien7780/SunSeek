@@ -30,7 +30,6 @@ interface OpenWeatherApiService {
         @Query("lon") lon: Double,
         @Query("appid") apiKey: String
     ): AirQualityResponse
-
 }
 
 object OpenWeatherApi {

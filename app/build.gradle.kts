@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     kotlin("plugin.serialization") version "2.1.0"
+    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
     alias(libs.plugins.kotlin.compose)
     id ("kotlin-kapt")
 }
@@ -103,7 +104,12 @@ dependencies {
     // Google SDK
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
-    kapt ("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+    ksp(libs.moshi.kotlin.codegen)
     // Image handle
-    implementation ("io.coil-kt:coil-compose:2.4.0")
+    implementation (libs.coil.compose)
+}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
