@@ -158,50 +158,48 @@ fun HomeScreen(
                     openLogoutDialog = !openLogoutDialog
                 }
             }
-            when {
-                weatherReport != null -> {
-                    // Image, Location, and Address
-                    item {
-                        // Image
-                        ImagePicker(
-                            imageUri = imageUri,
-                            bitmap = bitmap,
-                        ) {
-                            openGetImageDialog = it
-                        }
-                        // Address information
-                        Text(
-                            weatherReport.detailAddress,
-                            modifier = Modifier.padding(top = 30.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.displaySmall
-                        )
-                        // Address
-                        Text(
-                            "Địa chỉ: ${weatherReport.streetAddress}",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontStyle = FontStyle.Italic,
-                            modifier = Modifier.padding(bottom = 10.dp)
-                        )
-                    }
-                    // Information bar
-                    items(weatherReport.toListWeatherInfo()) { weatherInfo ->
-                        InformationBar(
-                            modifier = Modifier.padding(bottom = 5.dp),
-                            informationName = stringResource(weatherInfo.informationName),
-                            weatherInfo = weatherInfo.weatherInfo,
-                            weatherLevel = weatherInfo.weatherLevel,
-                        )
-                    }
-                }
-
-                else -> {
+            when (weatherReport){
+                null -> {
                     item {
                         EmptyWeatherReportBody {
                             onFavoriteLocationsButtonClick()
                         }
                     }
                 }
+                else -> {
+                   item {
+                       // Image Picker
+                       ImagePicker(
+                           imageUri = imageUri,
+                           bitmap = bitmap,
+                       ) {
+                           openGetImageDialog = it
+                       }
+                       // Detail Address
+                       Text(
+                           weatherReport.detailAddress,
+                           modifier = Modifier.padding(top = 30.dp),
+                           textAlign = TextAlign.Center,
+                           style = MaterialTheme.typography.displaySmall
+                       )
+                       // Street Address
+                       Text(
+                           "Địa chỉ: ${weatherReport.streetAddress}",
+                           style = MaterialTheme.typography.labelSmall,
+                           fontStyle = FontStyle.Italic,
+                           modifier = Modifier.padding(bottom = 10.dp)
+                       )
+                   }
+                   // Information bar
+                   items(weatherReport.toListWeatherInfo()) { weatherInfo ->
+                       InformationBar(
+                           modifier = Modifier.padding(bottom = 5.dp),
+                           informationName = stringResource(weatherInfo.informationName),
+                           weatherInfo = weatherInfo.weatherInfo,
+                           weatherLevel = weatherInfo.weatherLevel,
+                       )
+                   }
+               }
             }
 
             // Information description bar

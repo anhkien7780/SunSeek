@@ -109,4 +109,6 @@ Lượng mưa ảnh hưởng trực tiếp đến tầm nhìn hoàng hôn:\n
     <string name="tip_4">Thời gian: Đến địa điểm ngắm hoàng hôn sớm hơn ít nhất 20-30 phút để chọn vị trí và thư giãn.</string>
     <string name="take_photo">Chụp ảnh</string>
     <string name="get_photo_from_collection">Chọn ảnh từ thư viện</string>
+    <string name="validate_account">Xác thực tài khoản</string>
+    <string name="loading_location_list">Tải danh sách địa chỉ</string>
 </resources>
