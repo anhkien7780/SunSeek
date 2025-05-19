@@ -357,16 +357,16 @@ fun LoginScreen(
     }
 
     when {
-        accountLoadingUIState == LoadingUIState.Loading -> FullScreenLoading("Xác thực tài khoản")
-        locationLoadingUIState == LoadingUIState.Loading -> FullScreenLoading("Tải danh sách địa chỉ")
+        accountLoadingUIState == LoadingUIState.Loading -> FullScreenLoading(stringResource(R.string.validate_account))
+        locationLoadingUIState == LoadingUIState.Loading -> FullScreenLoading(stringResource(R.string.loading_location_list))
     }
 }
 
 fun validatePassword(password: String, correctPassword: String, screen: Screen): Boolean {
-    if (screen == Screen.Register) {
-        return password == correctPassword
+    return if (screen == Screen.Register) {
+        password == correctPassword
     } else {
-        return true
+        true
     }
 }
 
@@ -498,6 +498,7 @@ fun CorrectPasswordInput(
 }
 
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreView() {
@@ -509,6 +510,7 @@ fun LoginScreenPreView() {
     }
 }
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun getScreenCenter(): Offset {
     val configuration = LocalConfiguration.current
