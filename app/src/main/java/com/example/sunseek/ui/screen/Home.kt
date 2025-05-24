@@ -62,11 +62,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.sunseek.R
 import com.example.sunseek.model.Description
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.WeatherLevel
 import com.example.sunseek.model.listDescription
 import com.example.sunseek.model.toListWeatherInfo
 import com.example.sunseek.viewmodel.AccountViewModel
-import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -159,7 +159,7 @@ fun HomeScreen(
                     openLogoutDialog = !openLogoutDialog
                 }
             }
-            when (weatherReport){
+            when (weatherReport) {
                 null -> {
                     item {
                         EmptyWeatherReportBody {
@@ -167,40 +167,41 @@ fun HomeScreen(
                         }
                     }
                 }
+
                 else -> {
-                   item {
-                       // Image Picker
-                       ImagePicker(
-                           imageUri = imageUri,
-                           bitmap = bitmap,
-                       ) {
-                           openGetImageDialog = it
-                       }
-                       // Detail Address
-                       Text(
-                           weatherReport.detailAddress,
-                           modifier = Modifier.padding(top = 30.dp),
-                           textAlign = TextAlign.Center,
-                           style = MaterialTheme.typography.displaySmall
-                       )
-                       // Street Address
-                       Text(
-                           "Địa chỉ: ${weatherReport.streetAddress}",
-                           style = MaterialTheme.typography.labelSmall,
-                           fontStyle = FontStyle.Italic,
-                           modifier = Modifier.padding(bottom = 10.dp)
-                       )
-                   }
-                   // Information bar
-                   items(weatherReport.toListWeatherInfo()) { weatherInfo ->
-                       InformationBar(
-                           modifier = Modifier.padding(bottom = 5.dp),
-                           informationName = stringResource(weatherInfo.informationName),
-                           weatherInfo = weatherInfo.weatherInfo,
-                           weatherLevel = weatherInfo.weatherLevel,
-                       )
-                   }
-               }
+                    item {
+                        // Image Picker
+                        ImagePicker(
+                            imageUri = imageUri,
+                            bitmap = bitmap,
+                        ) {
+                            openGetImageDialog = it
+                        }
+                        // Detail Address
+                        Text(
+                            weatherReport.detailAddress,
+                            modifier = Modifier.padding(top = 30.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.displaySmall
+                        )
+                        // Street Address
+                        Text(
+                            "Địa chỉ: ${weatherReport.streetAddress}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+                    }
+                    // Information bar
+                    items(weatherReport.toListWeatherInfo()) { weatherInfo ->
+                        InformationBar(
+                            modifier = Modifier.padding(bottom = 5.dp),
+                            informationName = stringResource(weatherInfo.informationName),
+                            weatherInfo = weatherInfo.weatherInfo,
+                            weatherLevel = weatherInfo.weatherLevel,
+                        )
+                    }
+                }
             }
 
             // Information description bar
@@ -295,30 +296,18 @@ fun HomeScreen(
 
             openGetImageDialog -> {
                 AlertDialog(
+                    modifier = Modifier.size(width = 280.dp, height = 144.dp),
                     containerColor = MaterialTheme.colorScheme.surface,
                     onDismissRequest = {
-                        openGetImageDialog = false
                     },
                     title = {
                         Column(
+                            modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.Center
                         ) {
                             TextButton(
-                                colors = ButtonDefaults.textButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onSurface
-                                ),
-                                onClick = {
-                                    pickImageLauncher.launch("image/*")
-                                    openGetImageDialog = false
-                                },
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.get_photo_from_collection),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                            TextButton(
+                                modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.textButtonColors(
                                     contentColor = MaterialTheme.colorScheme.onSurface
                                 ),
@@ -327,8 +316,35 @@ fun HomeScreen(
                                     openGetImageDialog = false
                                 },
                             ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.camera),
+                                    contentDescription = stringResource(R.string.take_photo)
+                                )
+                                Spacer(Modifier.padding(5.dp))
                                 Text(
+                                    modifier = Modifier.weight(1f),
                                     text = stringResource(R.string.take_photo),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                            TextButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                ),
+                                onClick = {
+                                    pickImageLauncher.launch("image/*")
+                                    openGetImageDialog = false
+                                },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.photo_library),
+                                    contentDescription = stringResource(R.string.get_photo_from_collection)
+                                )
+                                Spacer(Modifier.padding(5.dp))
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = stringResource(R.string.get_photo_from_collection),
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
@@ -338,8 +354,9 @@ fun HomeScreen(
                 )
             }
         }
-        when{
-            loadingUIState == LoadingUIState.Loading ->{
+        // Loading Indicator
+        when {
+            loadingUIState == LoadingUIState.Loading -> {
                 FullScreenLoading()
             }
         }
@@ -622,5 +639,4 @@ fun HomeScreenPreview() {
         onLogoutSuccess = {}
     )
 }
-
 

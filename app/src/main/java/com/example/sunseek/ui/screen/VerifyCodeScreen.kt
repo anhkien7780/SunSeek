@@ -4,6 +4,7 @@ package com.example.sunseek.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,10 +35,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
+import com.example.sunseek.model.EmailRequest
 import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.VerifyCodeRequest
 import com.example.sunseek.ui.theme.SunSeekTheme
@@ -122,11 +126,41 @@ fun VerifyCodeScreen(
                     style = MaterialTheme.typography.labelLarge,
                 )
             }
+            Spacer(Modifier.padding(5.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.did_received_code),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                TextButton(onClick = {
+                    scope.launch {
+                        accountViewModel.forgetPasswordRequest(context, EmailRequest(email)) {}
+                    }
+                }) {
+                    Text(
+                        text = stringResource(R.string.resend),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
         when (loadingUIState) {
             LoadingUIState.Failed -> {}
             LoadingUIState.Idle -> {}
-            LoadingUIState.Loading -> FullScreenLoading(stringResource(R.string.verifying), innerPadding)
+            LoadingUIState.Loading -> FullScreenLoading(
+                stringResource(R.string.verifying),
+                innerPadding
+            )
+
             LoadingUIState.Success -> {}
         }
         LaunchedEffect(loadingUIState) {
