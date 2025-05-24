@@ -50,9 +50,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.ui.theme.SunSeekTheme
-import com.example.sunseek.viewmodel.LoadingUIState
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.MapViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -362,7 +363,7 @@ fun SelectLocationScreenPreview() {
         MapScreen(
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(
                 LocalContext.current
-            ), locationViewModel = LocationViewModel(), onBack = {}, mapViewModel = MapViewModel()
+            ), locationViewModel = viewModel(), onBack = {}, mapViewModel = viewModel()
         )
     }
 }

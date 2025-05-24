@@ -53,11 +53,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.Address
 import com.example.sunseek.model.LocationWithID
 import com.example.sunseek.ui.theme.SunSeekTheme
-import com.example.sunseek.viewmodel.LoadingUIState
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
@@ -215,9 +216,9 @@ fun FavoriteLocationScreenPreview() {
     SunSeekTheme {
         FavoriteLocationScreen(
             onBack = {},
-            onAddressSelected = {}, locationViewModel = LocationViewModel(),
+            onAddressSelected = {}, locationViewModel = viewModel(),
             onAddLocation = {},
-            openWeatherViewModel = OpenWeatherViewModel()
+            openWeatherViewModel = viewModel()
         )
     }
 }

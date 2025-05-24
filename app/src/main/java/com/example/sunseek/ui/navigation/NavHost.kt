@@ -1,5 +1,8 @@
 package com.example.sunseek.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -15,6 +18,8 @@ import com.example.sunseek.ui.screen.Login
 import com.example.sunseek.ui.screen.LoginScreen
 import com.example.sunseek.ui.screen.Map
 import com.example.sunseek.ui.screen.MapScreen
+import com.example.sunseek.ui.screen.Splash
+import com.example.sunseek.ui.screen.SplashScreen
 import com.example.sunseek.ui.screen.VerifyCode
 import com.example.sunseek.ui.screen.VerifyCodeScreen
 import com.example.sunseek.viewmodel.AccountViewModel
@@ -22,6 +27,7 @@ import com.example.sunseek.viewmodel.ForgetPasswordViewModel
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.MapViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
+import com.example.sunseek.viewmodel.ServerViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 
 
@@ -34,7 +40,39 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
     val mapViewModel: MapViewModel = viewModel()
     val openWeatherViewModel: OpenWeatherViewModel = viewModel()
     val forgetPasswordViewModel: ForgetPasswordViewModel = viewModel()
-    NavHost(navController = navController, startDestination = Login) {
+    val serverViewModel: ServerViewModel = viewModel()
+    NavHost(
+        navController = navController,
+        startDestination = Splash,
+        enterTransition = {
+            fadeIn(
+                animationSpec = tween(
+                    durationMillis = 1000
+                )
+            )
+        },
+        exitTransition = {
+            fadeOut(
+                animationSpec = tween(
+                    durationMillis = 1000
+                )
+            )
+        }) {
+        composable<Splash> {
+            SplashScreen(serverViewModel = serverViewModel, onRefresh = {
+                navController.navigate(Splash) {
+                    popUpTo(0) {
+                        inclusive = true
+                    }
+                }
+            }) {
+                navController.navigate(Login) {
+                    popUpTo(0) {
+                        inclusive = true
+                    }
+                }
+            }
+        }
         composable<Login> {
             LoginScreen(
                 accountViewModel = accountViewModel,
@@ -59,7 +97,7 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
                 },
                 onLogoutSuccess = {
                     navController.navigate(Login) {
-                        popUpTo(0){
+                        popUpTo(0) {
                             inclusive = true
                         }
                     }
@@ -88,20 +126,22 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
             )
         }
         composable<VerifyCode> {
-            VerifyCodeScreen(onBack = { navController.popBackStack() },
+            VerifyCodeScreen(
+                onBack = { navController.popBackStack() },
                 forgetPasswordViewModel = forgetPasswordViewModel,
                 accountViewModel = accountViewModel,
 
-            ) {
+                ) {
                 navController.navigate(ChangePassword)
             }
         }
         composable<ChangePassword> {
-            ChangePasswordScreen(onBack = {navController.popBackStack()},
+            ChangePasswordScreen(
+                onBack = { navController.popBackStack() },
                 forgetPasswordViewModel = forgetPasswordViewModel
             ) {
-                navController.navigate(Login){
-                    popUpTo(0){
+                navController.navigate(Login) {
+                    popUpTo(0) {
                         inclusive = true
                     }
                 }

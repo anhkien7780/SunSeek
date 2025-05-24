@@ -35,12 +35,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.VerifyCodeRequest
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.AccountViewModel
 import com.example.sunseek.viewmodel.ForgetPasswordViewModel
-import com.example.sunseek.viewmodel.LoadingUIState
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -100,7 +101,7 @@ fun VerifyCodeScreen(
                     .fillMaxWidth(),
                 value = code,
                 onValueChange = { code = it },
-                placeholder = { Text(text = "Nhập mã xác thực") },
+                placeholder = { Text(text = stringResource(R.string.enter_verify_code)) },
                 singleLine = true
             )
             Spacer(Modifier.padding(5.dp))
@@ -143,8 +144,8 @@ fun VerifyCodeScreenPreview() {
     SunSeekTheme {
         VerifyCodeScreen(
             onBack = {}, onVerifySuccess = {},
-            forgetPasswordViewModel = ForgetPasswordViewModel(),
-            accountViewModel = AccountViewModel(),
+            forgetPasswordViewModel = viewModel(),
+            accountViewModel = viewModel(),
         )
     }
 }

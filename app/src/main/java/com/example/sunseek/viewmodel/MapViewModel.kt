@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sunseek.BuildConfig
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.Location
 import com.example.sunseek.network.GeocodingApi
 import com.google.android.gms.maps.model.LatLng

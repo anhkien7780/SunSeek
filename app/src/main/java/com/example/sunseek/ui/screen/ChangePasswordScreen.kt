@@ -38,10 +38,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.ForgetPasswordViewModel
-import com.example.sunseek.viewmodel.LoadingUIState
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -103,11 +104,14 @@ fun ChangePasswordScreen(
                 value = newPassword,
                 onValueChange = { newPassword = it },
                 placeholder = { Text(text = stringResource(R.string.enter_new_password)) },
-                visualTransformation = if(!passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (!passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {
                     val icon =
                         if (passwordVisible) R.drawable.visibility else R.drawable.visibility_off
-                    val description = if (passwordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu"
+                    val description =
+                        if (passwordVisible) stringResource(R.string.hide_password) else stringResource(
+                            R.string.show_password
+                        )
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(painter = painterResource(icon), contentDescription = description)
                     }
@@ -123,16 +127,19 @@ fun ChangePasswordScreen(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 placeholder = { Text(text = stringResource(R.string.confirm_new_password)) },
-                visualTransformation = if(!passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (!passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = {
                     val icon =
                         if (passwordVisible) R.drawable.visibility else R.drawable.visibility_off
-                    val description = if (passwordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu"
+                    val description =
+                        if (passwordVisible) stringResource(R.string.hide_password) else stringResource(
+                            R.string.show_password
+                        )
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(painter = painterResource(icon), contentDescription = description)
                     }
                 },
-                isError = if(confirmPassword.isNotEmpty()) newPassword != confirmPassword else false,
+                isError = if (confirmPassword.isNotEmpty()) newPassword != confirmPassword else false,
                 singleLine = true
             )
             Spacer(Modifier.padding(5.dp))
@@ -158,14 +165,14 @@ fun ChangePasswordScreen(
             }
 
         }
-        when(loadingUIState){
+        when (loadingUIState) {
             LoadingUIState.Loading -> FullScreenLoading(stringResource(R.string.change_password))
             LoadingUIState.Idle -> {}
             LoadingUIState.Success -> {}
             LoadingUIState.Failed -> {}
         }
         LaunchedEffect(loadingUIState) {
-            if(loadingUIState == LoadingUIState.Success){
+            if (loadingUIState == LoadingUIState.Success) {
                 onChangePasswordSuccess()
                 forgetPasswordViewModel.setIdle()
             }
@@ -176,7 +183,10 @@ fun ChangePasswordScreen(
 @Preview
 @Composable
 fun ChangePasswordScreenPreview() {
-    SunSeekTheme { ChangePasswordScreen(onBack = {},
-        forgetPasswordViewModel = ForgetPasswordViewModel()
-    ) { } }
+    SunSeekTheme {
+        ChangePasswordScreen(
+            onBack = {},
+            forgetPasswordViewModel = viewModel()
+        ) { }
+    }
 }

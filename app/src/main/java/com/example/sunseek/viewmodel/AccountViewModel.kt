@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import com.example.sunseek.MyApplication
 import com.example.sunseek.R
 import com.example.sunseek.model.EmailRequest
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.User
 import com.example.sunseek.network.SunSeekApi
 import com.example.sunseek.network.clearCookie
@@ -16,13 +17,6 @@ import com.example.sunseek.network.saveCookie
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-
-sealed class LoadingUIState {
-    data object Loading : LoadingUIState()
-    data object Failed : LoadingUIState()
-    data object Idle : LoadingUIState()
-    data object Success : LoadingUIState()
-}
 
 class AccountViewModel : ViewModel() {
     private var _email = mutableStateOf("")
@@ -33,6 +27,7 @@ class AccountViewModel : ViewModel() {
     fun updateUsername(username: String) {
         _email.value = username
     }
+
 
     suspend fun register(context: Context, user: User): Boolean {
         try {

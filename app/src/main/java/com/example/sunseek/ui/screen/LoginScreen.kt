@@ -79,7 +79,7 @@ import com.example.sunseek.model.EmailRequest
 import com.example.sunseek.model.User
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.AccountViewModel
-import com.example.sunseek.viewmodel.LoadingUIState
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.viewmodel.LocationViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable

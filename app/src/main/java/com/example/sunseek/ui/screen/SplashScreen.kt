@@ -1,96 +1,95 @@
 package com.example.sunseek.ui.screen
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sunseek.R
 import com.example.sunseek.ui.theme.SunSeekTheme
+import com.example.sunseek.viewmodel.ServerViewModel
+import kotlinx.serialization.Serializable
+
+@Serializable
+object Splash
 
 @Composable
-fun SplashScreen() {
-    val color = MaterialTheme.colorScheme.primary
+fun SplashScreen(
+    modifier: Modifier = Modifier,
+    serverViewModel: ServerViewModel,
+    onRefresh: () -> Unit,
+    onNavigate: () -> Unit,
+) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        serverViewModel.isNetworkAvailable(context)
+    }
+
+    val isNetworkAvailable by serverViewModel.isNetworkAvailable.collectAsState()
+    val isServerRunning by serverViewModel.isServerRunning.collectAsState()
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier.drawBehind
-            {
-                drawCircle(
-                    radius = 50f,
-                    color = color
+        if (isNetworkAvailable) {
+            serverViewModel.wakeServer()
+            if (isServerRunning) {
+                LaunchedEffect(Unit) {
+                    onNavigate()
+                }
+            }
+            Image(
+                modifier = Modifier.size(200.dp),
+                painter = painterResource(R.drawable.sunseek_logo),
+                contentDescription = "Logo"
+            )
+            Text(
+                text = "SunSeek",
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        } else {
+            IconButton(onClick = onRefresh) {
+                Icon(
+                    painter = painterResource(R.drawable.autorenew),
+                    contentDescription = stringResource(R.string.refresh)
                 )
-            },
-        )
+            }
+            Text(
+                text = stringResource(R.string.reconnect),
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
     }
 }
-
-@Composable
-fun SunRay(
-    center: Offset,
-    radius: Float,
-    length: Float,
-    color: Color
-) {
-    val density = LocalDensity.current
-
-    val start = with(density) {  }
-    val end = with(density) { Offset(length.dp.toPx(), length.dp.toPx()) }
-    val infiniteTransition = rememberInfiniteTransition()
-    val angle = infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 8000,
-                easing = LinearEasing,
-            )
-        )
-    )
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .drawBehind {
-            rotate(degrees = angle.value) {
-
-            }
-        })
-}
-
 
 @Preview(showBackground = true)
 @Composable
 fun SplashScreenPreview() {
     SunSeekTheme {
-        SplashScreen()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SunRayPreview() {
-    SunSeekTheme {
-        SunRay(
-            center = Offset(100f, 100f),
-            radius = 50f,
-            length = 50f,
-            color = Color.Red
-        )
+        SplashScreen(
+            onNavigate = {},
+            modifier = Modifier,
+            serverViewModel = viewModel(),
+            onRefresh = {})
     }
 }

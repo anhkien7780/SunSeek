@@ -58,6 +58,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.sunseek.R
 import com.example.sunseek.model.Description
@@ -65,7 +66,7 @@ import com.example.sunseek.model.WeatherLevel
 import com.example.sunseek.model.listDescription
 import com.example.sunseek.model.toListWeatherInfo
 import com.example.sunseek.viewmodel.AccountViewModel
-import com.example.sunseek.viewmodel.LoadingUIState
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -613,8 +614,8 @@ fun ImagePicker(
 @Composable
 fun HomeScreenPreview() {
     HomeScreen(
-        accountViewModel = AccountViewModel(),
-        weatherViewModel = OpenWeatherViewModel(),
+        accountViewModel = viewModel(),
+        weatherViewModel = viewModel(),
         onSettingButtonClick = {},
         onFavoriteLocationsButtonClick = {},
         onMapButtonClick = {},

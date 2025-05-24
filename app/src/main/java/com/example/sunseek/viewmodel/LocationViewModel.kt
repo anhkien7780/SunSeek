@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sunseek.MyApplication
 import com.example.sunseek.R
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.Location
 import com.example.sunseek.model.LocationWithID
 import com.example.sunseek.network.SunSeekApi

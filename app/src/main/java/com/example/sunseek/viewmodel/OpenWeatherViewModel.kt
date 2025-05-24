@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.sunseek.BuildConfig
 import com.example.sunseek.MyApplication
 import com.example.sunseek.model.Address
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.WeatherReport
 import com.example.sunseek.network.OpenWeatherApi
 import kotlinx.coroutines.flow.MutableStateFlow
