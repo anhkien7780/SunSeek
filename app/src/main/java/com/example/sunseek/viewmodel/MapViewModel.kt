@@ -20,10 +20,15 @@ class MapViewModel : ViewModel() {
     val currentLocation = MutableStateFlow<Location?>(null)
     private val _isCurrentLocation = MutableStateFlow(true)
     private val _isLoading: MutableStateFlow<LoadingUIState> = MutableStateFlow(LoadingUIState.Idle)
+    val isLoading = _isLoading.asStateFlow()
     private val geocodeAPIKey = BuildConfig.GEOAPIFY_API_KEY
 
 
-    suspend fun getLocation(context: Context, address: String) {
+    suspend fun getLocation(
+        context: Context,
+        address: String,
+        onGetLocationSuccess: (Location) -> Unit
+    ) {
         try {
             _isLoading.value = LoadingUIState.Loading
             val response =
@@ -40,6 +45,7 @@ class MapViewModel : ViewModel() {
                 )
                 Log.d("Địa điểm nhận được: ", _location.value.toString())
                 _isCurrentLocation.value = false
+                onGetLocationSuccess(_location.value!!)
                 _isLoading.value = LoadingUIState.Success
             }
         } catch (e: Exception) {
@@ -79,7 +85,15 @@ class MapViewModel : ViewModel() {
         }
     }
 
-    fun setCurrentLocation(context: Context, latLng: LatLng){
+    fun setLocationToCurrent() {
+        try {
+            _location.value = currentLocation.value
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun setCurrentLocation(context: Context, latLng: LatLng) {
         viewModelScope.launch {
             try {
                 val response = GeocodingApi.geocodingApiService.reverseCoordinate(
@@ -89,7 +103,8 @@ class MapViewModel : ViewModel() {
                 )
                 _isCurrentLocation.value = true
                 if (response.features.isEmpty()) {
-                    Toast.makeText(context, "Gán địa chỉ hiện tại thất bại", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Gán địa chỉ hiện tại thất bại", Toast.LENGTH_SHORT)
+                        .show()
                 } else {
                     val properties = response.features[0].properties
                     currentLocation.value = Location(

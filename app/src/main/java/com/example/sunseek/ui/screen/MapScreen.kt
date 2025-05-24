@@ -83,8 +83,9 @@ fun MapScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val locationUIState by locationViewModel.loadingUIState.collectAsState()
+    val mapLoadingUIState by mapViewModel.isLoading.collectAsState()
     var addressInput by remember { mutableStateOf("") }
-    val currentLocation = mapViewModel.currentLocation.collectAsState()
+    val currentLocation by mapViewModel.currentLocation.collectAsState()
     val localManager = LocalFocusManager.current
     var openDialogState by remember { mutableStateOf(false) }
     val location by mapViewModel.location.collectAsState()
@@ -136,14 +137,12 @@ fun MapScreen(
                 ),
                 onClick = {
                     scope.launch {
-                        currentLocation.value?.let {
+                        currentLocation?.let {
                             lastLocation = LatLng(it.latitude, it.longitude)
+                            mapViewModel.setLocationToCurrent()
                             cameraPositionState.animate(
                                 update = CameraUpdateFactory.newLatLng(
-                                    LatLng(
-                                        it.latitude,
-                                        it.longitude
-                                    )
+                                    lastLocation!!
                                 )
                             )
                         }
@@ -177,19 +176,13 @@ fun MapScreen(
                             IconButton(
                                 onClick = {
                                     scope.launch {
-                                        mapViewModel.getLocation(context, addressInput)
-                                        location?.let {
-                                            LatLng(
-                                                it.latitude,
-                                                it.longitude
-                                            )
-                                        }?.let {
-                                            lastLocation = it
-                                            CameraUpdateFactory.newLatLng(it)
-                                        }?.let {
-                                            cameraPositionState.animate(
-                                                update = it
-                                            )
+                                        mapViewModel.getLocation(context, addressInput) {
+                                            lastLocation = it.toLatLng()
+                                            val cameraUpdate =
+                                                CameraUpdateFactory.newLatLng(lastLocation!!)
+                                            scope.launch {
+                                                cameraPositionState.animate(update = cameraUpdate)
+                                            }
                                         }
                                     }
                                 }) {
@@ -293,7 +286,7 @@ fun MapScreen(
                             onClick = {
                                 scope.launch {
                                     if (mapViewModel.isCurrentLocation()) {
-                                        currentLocation.value?.let {
+                                        currentLocation?.let {
                                             locationViewModel.addAddress(context, it) {
                                                 openDialogState = false
                                             }
@@ -344,12 +337,14 @@ fun MapScreen(
                     }
                 })
         }
+        when {
+            mapLoadingUIState == LoadingUIState.Loading -> {
+                FullScreenLoading("Tải địa chỉ", innerPadding = innerPadding)
+            }
 
-        when (locationUIState) {
-            LoadingUIState.Failed -> {}
-            LoadingUIState.Idle -> {}
-            LoadingUIState.Loading -> FullScreenLoading(innerPadding = innerPadding)
-            LoadingUIState.Success -> {}
+            locationUIState == LoadingUIState.Loading -> {
+                FullScreenLoading("Tải địa chỉ", innerPadding = innerPadding)
+            }
         }
 
     }
