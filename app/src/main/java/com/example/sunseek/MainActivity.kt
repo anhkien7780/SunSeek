@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
+import com.example.sunseek.network.handleAppRestart
 import com.example.sunseek.ui.navigation.SunSeekNavHost
 import com.example.sunseek.ui.theme.SunSeekTheme
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -13,10 +15,14 @@ class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         enableEdgeToEdge()
         setContent {
             SunSeekTheme {
+                LaunchedEffect(Unit) {
+                    handleAppRestart(this@MainActivity)
+                }
                 SunSeekNavHost(fusedLocationClient)
             }
         }

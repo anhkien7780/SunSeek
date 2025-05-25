@@ -2,6 +2,7 @@ package com.example.sunseek.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -44,41 +45,65 @@ fun SplashScreen(
 
     val isNetworkAvailable by serverViewModel.isNetworkAvailable.collectAsState()
     val isServerRunning by serverViewModel.isServerRunning.collectAsState()
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (isNetworkAvailable) {
-            serverViewModel.wakeServer()
-            if (isServerRunning) {
-                LaunchedEffect(Unit) {
-                    onNavigate()
+    val isRequestTimeOut by serverViewModel.isRequestTimeOut.collectAsState()
+    when (isRequestTimeOut) {
+        true -> TimeOutBody()
+        false -> Column(
+            modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            when (isNetworkAvailable) {
+                null -> {}
+                false -> NetWorkUnavailableBody(onRefresh)
+                true -> {
+                    LaunchedEffect(Unit) {
+                        serverViewModel.wakeServer()
+                    }
+                    LaunchedEffect(isServerRunning) {
+                        if (isServerRunning) {
+                            onNavigate()
+                        }
+                    }
+                    Image(
+                        modifier = Modifier.size(200.dp),
+                        painter = painterResource(R.drawable.sunseek_logo),
+                        contentDescription = "Logo"
+                    )
+                    Text(
+                        text = "SunSeek",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
-            Image(
-                modifier = Modifier.size(200.dp),
-                painter = painterResource(R.drawable.sunseek_logo),
-                contentDescription = "Logo"
-            )
-            Text(
-                text = "SunSeek",
-                style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-        } else {
-            IconButton(onClick = onRefresh) {
-                Icon(
-                    painter = painterResource(R.drawable.autorenew),
-                    contentDescription = stringResource(R.string.refresh)
-                )
-            }
-            Text(
-                text = stringResource(R.string.reconnect),
-                style = MaterialTheme.typography.labelLarge
-            )
         }
+    }
+}
+
+@Composable
+fun NetWorkUnavailableBody(onRefresh: () -> Unit) {
+    IconButton(onClick = onRefresh) {
+        Icon(
+            painter = painterResource(R.drawable.autorenew),
+            contentDescription = stringResource(R.string.refresh)
+        )
+    }
+    Text(
+        text = stringResource(R.string.reconnect),
+        style = MaterialTheme.typography.labelLarge
+    )
+}
+
+@Composable
+fun TimeOutBody() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = stringResource(R.string.server_no_response),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.error
+        )
     }
 }
 

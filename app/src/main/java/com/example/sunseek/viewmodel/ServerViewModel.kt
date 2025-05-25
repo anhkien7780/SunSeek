@@ -15,21 +15,27 @@ class ServerViewModel : ViewModel() {
 
     private val _isServerRunning = MutableStateFlow(false)
     val isServerRunning = _isServerRunning.asStateFlow()
-    private val _isNetworkAvailable = MutableStateFlow(false)
+    private val _isNetworkAvailable = MutableStateFlow<Boolean?>(null)
     val isNetworkAvailable = _isNetworkAvailable.asStateFlow()
     private val _count = MutableStateFlow(0)
+    private val timeOutSecond = 30
+    private val _isRequestTimeOut = MutableStateFlow(false)
+    val isRequestTimeOut = _isRequestTimeOut.asStateFlow()
     fun wakeServer() {
         try {
             viewModelScope.launch {
-                while (_count.value < 3) {
+                while (_count.value < timeOutSecond/5) {
                     val response = SunSeekApi.retrofitService.wake()
                     if (response.isSuccessful) {
                         _isServerRunning.value = true
-                        _count.value = 0
-                    } else{
+                        break
+                    } else {
                         _count.value++
                     }
                     delay(5000)
+                }
+                if(!_isServerRunning.value){
+                    _isRequestTimeOut.value = true
                 }
             }
         } catch (ex: Exception) {
@@ -44,8 +50,9 @@ class ServerViewModel : ViewModel() {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
 
-        _isNetworkAvailable.value = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        _isNetworkAvailable.value =
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 
-        return _isNetworkAvailable.value
+        return _isNetworkAvailable.value!!
     }
 }

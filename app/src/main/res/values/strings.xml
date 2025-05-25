@@ -118,4 +118,5 @@ Lượng mưa ảnh hưởng trực tiếp đến tầm nhìn hoàng hôn:\n
     <string name="show_password">Hiện mật khẩu</string>
     <string name="did_received_code">Không nhận được mã?</string>
     <string name="resend">Gửi lại</string>
+    <string name="server_no_response">Máy chủ không phản hồi trong thời gian chờ, vui lòng thử lại sau</string>
 </resources>
