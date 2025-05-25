@@ -20,7 +20,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -52,8 +51,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
-import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.model.LoadingUIState
+import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.MapViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -127,31 +126,6 @@ fun MapScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton = {
-            OutlinedIconButton(
-                modifier = Modifier.padding(bottom = 60.dp, end = 10.dp),
-                colors = IconButtonDefaults.outlinedIconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                onClick = {
-                    scope.launch {
-                        currentLocation?.let {
-                            lastLocation = LatLng(it.latitude, it.longitude)
-                            mapViewModel.setLocationToCurrent()
-                            cameraPositionState.animate(
-                                update = CameraUpdateFactory.newLatLng(
-                                    lastLocation!!
-                                )
-                            )
-                        }
-                    }
-                }
-            ) {
-                Icon(imageVector = Icons.Outlined.Place, contentDescription = "Vị trí hiện tại")
-            }
-        },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -233,23 +207,52 @@ fun MapScreen(
                     )
                 }
             }
-            TextButton(
-                onClick = {
-                    openDialogState = true
-                },
-                modifier = Modifier
-                    .padding(bottom = 30.dp)
-                    .size(width = 310.dp, height = 40.dp)
-                    .align(Alignment.BottomCenter),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            Row(modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 30.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stringResource(R.string.confirm),
-                    style = MaterialTheme.typography.labelLarge
-                )
+                OutlinedIconButton(
+                    colors = IconButtonDefaults.outlinedIconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    onClick = {
+                        scope.launch {
+                            currentLocation?.let {
+                                lastLocation = LatLng(it.latitude, it.longitude)
+                                mapViewModel.setLocationToCurrent()
+                                cameraPositionState.animate(
+                                    update = CameraUpdateFactory.newLatLng(
+                                        lastLocation!!
+                                    )
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Place,
+                        contentDescription = stringResource(R.string.current_location)
+                    )
+                }
+                TextButton(
+                    onClick = {
+                        openDialogState = true
+                    },
+                    modifier = Modifier
+                        .size(width = 310.dp, height = 40.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.confirm),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
         }
         when {
@@ -285,19 +288,15 @@ fun MapScreen(
                         Button(
                             onClick = {
                                 scope.launch {
+                                    openDialogState = false
                                     if (mapViewModel.isCurrentLocation()) {
                                         currentLocation?.let {
-                                            locationViewModel.addAddress(context, it) {
-                                                openDialogState = false
-                                            }
+                                            locationViewModel.addAddress(context, it) {}
+                                            locationViewModel.getListLocation(context)
                                         }
-                                        locationViewModel.getListLocation(context)
                                     } else {
                                         location?.let {
-                                            locationViewModel.addAddress(
-                                                context,
-                                                it
-                                            ) { openDialogState = false }
+                                            locationViewModel.addAddress(context, it) {}
                                             locationViewModel.getListLocation(context)
                                         }
                                     }
@@ -339,11 +338,11 @@ fun MapScreen(
         }
         when {
             mapLoadingUIState == LoadingUIState.Loading -> {
-                FullScreenLoading("Tải địa chỉ", innerPadding = innerPadding)
+                FullScreenLoading()
             }
 
             locationUIState == LoadingUIState.Loading -> {
-                FullScreenLoading("Tải địa chỉ", innerPadding = innerPadding)
+                FullScreenLoading()
             }
         }
 

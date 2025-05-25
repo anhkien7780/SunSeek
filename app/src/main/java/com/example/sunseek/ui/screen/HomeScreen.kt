@@ -87,7 +87,6 @@ val normalWeatherColor = Color(185, 120, 0)
 fun HomeScreen(
     accountViewModel: AccountViewModel,
     weatherViewModel: OpenWeatherViewModel,
-    onSettingButtonClick: () -> Unit,
     onFavoriteLocationsButtonClick: () -> Unit,
     onMapButtonClick: () -> Unit,
     onLogoutSuccess: () -> Unit
@@ -100,33 +99,25 @@ fun HomeScreen(
     var openGetImageDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val weatherReport = remember { weatherViewModel.weatherReport.value }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val imageUri by weatherViewModel.weatherReportImageUrl.collectAsState()
+    val bitmap by weatherViewModel.weatherReportImageBitmap.collectAsState()
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri = uri
-        bitmap = null
+        weatherViewModel.weatherReportImageUrl.value = uri
+        weatherViewModel.weatherReportImageBitmap.value = null
     }
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bmp ->
-        bitmap = bmp
-        imageUri = null
+        weatherViewModel.weatherReportImageBitmap.value = bmp
+        weatherViewModel.weatherReportImageUrl.value = null
     }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
         BottomAppBar(
             modifier = Modifier.fillMaxWidth()
         ) {
-            MyCustomButton(
-                modifier = Modifier
-                    .weight(1f),
-                painterResourceID = R.drawable.settings,
-                contentDescription = stringResource(R.string.setting),
-                buttonText = stringResource(R.string.setting)
-            ) { onSettingButtonClick() }
-
             MyCustomButton(
                 modifier = Modifier
                     .weight(1f),
@@ -262,6 +253,7 @@ fun HomeScreen(
                                             val isLogoutSuccess =
                                                 accountViewModel.logout(context = context)
                                             if (isLogoutSuccess) {
+                                                weatherViewModel.onLogout()
                                                 onLogoutSuccess()
                                             }
                                         } catch (ex: Exception) {
@@ -633,7 +625,6 @@ fun HomeScreenPreview() {
     HomeScreen(
         accountViewModel = viewModel(),
         weatherViewModel = viewModel(),
-        onSettingButtonClick = {},
         onFavoriteLocationsButtonClick = {},
         onMapButtonClick = {},
         onLogoutSuccess = {}

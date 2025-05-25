@@ -88,7 +88,6 @@ fun SunSeekNavHost(fusedLocationProviderClient: FusedLocationProviderClient) {
             HomeScreen(
                 accountViewModel = accountViewModel,
                 weatherViewModel = openWeatherViewModel,
-                onSettingButtonClick = {},
                 onFavoriteLocationsButtonClick = {
                     navController.navigate(FavoriteLocation)
                 },

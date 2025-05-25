@@ -1,6 +1,5 @@
 package com.example.sunseek.ui.screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -56,9 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.Address
+import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.LocationWithID
 import com.example.sunseek.ui.theme.SunSeekTheme
-import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
@@ -124,7 +123,6 @@ fun FavoriteLocationScreen(
                 items(listLocation) { item ->
                     LocationBar(
                         address = item.toAddress(),
-                        imageSource = R.drawable.hoanghon,
                         onClick = {
                             openWeatherViewModel.getWeatherReportByCoordinates(
                                 item.latitude,
@@ -138,12 +136,6 @@ fun FavoriteLocationScreen(
                     selectedAddress = item.toAddress()
                 }
             }
-        }
-        when (weatherUIState) {
-            LoadingUIState.Idle -> {}
-            LoadingUIState.Loading -> FullScreenLoading("Tải thông tin thời tiết", innerPadding)
-            LoadingUIState.Failed -> {}
-            LoadingUIState.Success -> {}
         }
         LaunchedEffect(weatherUIState) {
             if (weatherUIState == LoadingUIState.Success) {
@@ -159,21 +151,19 @@ fun FavoriteLocationScreen(
                     onDismissRequest = { openAlertDialog = false },
                     onDelete = {
                         deleteLocationScope.launch {
+                            openAlertDialog = false
                             locationViewModel.deleteAddress(
                                 context,
                                 locationViewModel.selectedLocationID.value
                             )
-                            openAlertDialog = false
                         }
                     }
                 )
             }
         }
-        when (locationUIState) {
-            LoadingUIState.Failed -> {}
-            LoadingUIState.Idle -> {}
-            LoadingUIState.Loading -> FullScreenLoading(title = "Xóa địa chỉ")
-            LoadingUIState.Success -> {}
+        when {
+            locationUIState == LoadingUIState.Loading -> FullScreenLoading("Xóa địa chỉ")
+            weatherUIState == LoadingUIState.Loading -> FullScreenLoading("Tải thông tin thời tiết")
         }
 
     }
@@ -227,7 +217,6 @@ fun FavoriteLocationScreenPreview() {
 @Composable
 fun LocationBar(
     modifier: Modifier = Modifier,
-    imageSource: Int,
     address: Address,
     onClick: () -> Unit,
     onConfigurationClick: () -> Unit
@@ -235,23 +224,21 @@ fun LocationBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .size(width = 400.dp, height = 100.dp)
+            .height(65.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(
                 color = MaterialTheme.colorScheme.primaryContainer,
                 shape = RoundedCornerShape(10.dp)
             )
+            .padding(10.dp)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(imageSource),
-            contentDescription = stringResource(R.string.favorite_image),
-            contentScale = ContentScale.FillHeight,
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .size(80.dp),
+        Icon(
+            painter = painterResource(R.drawable.location_on),
+            contentDescription = "Location icon"
         )
+        Spacer(Modifier.padding(10.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
                 text = address.detailedAddress,
@@ -271,8 +258,7 @@ fun LocationBar(
         IconButton(
             onClick = {
                 onConfigurationClick()
-            },
-            modifier = Modifier.padding(end = 10.dp)
+            }
         ) {
             Icon(
                 imageVector = Icons.Outlined.Delete,
@@ -293,7 +279,7 @@ fun LocationBarPreview() {
                 detailedAddress = "Hồ Tây",
                 streetAddress = "Tây hồ, Hà Nội, Việt Nam"
             ),
-            imageSource = R.drawable.hoanghon, onClick = {}, onConfigurationClick = {},
+            onClick = {}, onConfigurationClick = {},
         )
     }
 }

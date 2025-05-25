@@ -1,5 +1,6 @@
 package com.example.sunseek.viewmodel
 
+import android.graphics.Bitmap
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -13,10 +14,13 @@ import com.example.sunseek.network.OpenWeatherApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.net.Uri
 
 
 class OpenWeatherViewModel : ViewModel() {
     private val _weatherReport = MutableStateFlow<WeatherReport?>(null)
+    val weatherReportImageUrl = MutableStateFlow<Uri?>(null)
+    val weatherReportImageBitmap = MutableStateFlow<Bitmap?>(null)
     val weatherReport = _weatherReport.asStateFlow()
     private val apiKey = BuildConfig.OPEN_WEATHER_API_KEY
     private val _weatherUIState: MutableStateFlow<LoadingUIState> =
@@ -80,5 +84,11 @@ class OpenWeatherViewModel : ViewModel() {
     }
     fun setIdle(){
         _weatherUIState.value = LoadingUIState.Idle
+    }
+
+    fun onLogout(){
+        _weatherReport.value = null
+        weatherReportImageUrl.value = null
+        weatherReportImageBitmap.value = null
     }
 }
