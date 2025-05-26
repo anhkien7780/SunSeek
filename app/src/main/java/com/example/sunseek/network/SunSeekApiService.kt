@@ -18,6 +18,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import java.util.concurrent.TimeUnit
 
 // Local host
 //private const val ip = "192.168.1.9"
@@ -29,7 +30,11 @@ private const val BASE_URL = "https://sunseek-server.onrender.com/"
 private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
 private val okHttpInterceptor =
-    OkHttpClient.Builder().addInterceptor(CookieInterceptor(context = MyApplication.appContext))
+    OkHttpClient.Builder()
+        .connectTimeout(50, TimeUnit.SECONDS)
+        .readTimeout(50, TimeUnit.SECONDS)
+        .writeTimeout(50, TimeUnit.SECONDS)
+        .addInterceptor(CookieInterceptor(context = MyApplication.appContext))
         .build()
 private val retrofit =
     Retrofit.Builder()
