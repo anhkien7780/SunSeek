@@ -11,8 +11,3 @@ data class Location(
 ){
     fun toLatLng(): LatLng = LatLng(latitude, longitude)
 }
-//
-//fun Location.toAddress(): Address = Address(
-//    detailedAddress = this.name.substringBefore(",") ?: "null",
-//    streetAddress = this.name.substringAfter(",") ?: "null",
-//)

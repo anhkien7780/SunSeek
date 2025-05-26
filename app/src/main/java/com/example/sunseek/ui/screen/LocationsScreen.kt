@@ -50,14 +50,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.Address
 import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.LocationWithID
-import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.OpenWeatherViewModel
 import kotlinx.coroutines.launch
@@ -200,19 +197,6 @@ private fun EmptyBody(
     }
 }
 
-@Preview
-@Composable
-fun FavoriteLocationScreenPreview() {
-    SunSeekTheme {
-        FavoriteLocationScreen(
-            onBack = {},
-            onAddressSelected = {}, locationViewModel = viewModel(),
-            onAddLocation = {},
-            openWeatherViewModel = viewModel()
-        )
-    }
-}
-
 @Stable
 @Composable
 fun LocationBar(
@@ -267,20 +251,6 @@ fun LocationBar(
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LocationBarPreview() {
-    SunSeekTheme {
-        LocationBar(
-            address = Address(
-                detailedAddress = "Hồ Tây",
-                streetAddress = "Tây hồ, Hà Nội, Việt Nam"
-            ),
-            onClick = {}, onConfigurationClick = {},
-        )
     }
 }
 
@@ -388,19 +358,6 @@ fun MyCustomButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-        )
-    }
-}
-
-@Preview
-@Composable
-fun CustomDialogPreview() {
-    SunSeekTheme {
-        CustomDialog(
-            title = "Hồ Tây",
-            supportText = "Bạn muốn thay đổi địa chỉ?",
-            onDismissRequest = {},
-            onDelete = {},
         )
     }
 }

@@ -55,10 +55,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.sunseek.R
 import com.example.sunseek.model.Description
@@ -618,16 +616,3 @@ fun ImagePicker(
         }
     }
 }
-
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen(
-        accountViewModel = viewModel(),
-        weatherViewModel = viewModel(),
-        onFavoriteLocationsButtonClick = {},
-        onMapButtonClick = {},
-        onLogoutSuccess = {}
-    )
-}
-

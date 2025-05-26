@@ -72,14 +72,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sunseek.R
 import com.example.sunseek.model.EmailRequest
-import com.example.sunseek.model.User
-import com.example.sunseek.ui.theme.SunSeekTheme
-import com.example.sunseek.viewmodel.AccountViewModel
 import com.example.sunseek.model.LoadingUIState
+import com.example.sunseek.model.User
+import com.example.sunseek.viewmodel.AccountViewModel
 import com.example.sunseek.viewmodel.LocationViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -498,17 +496,7 @@ fun CorrectPasswordInput(
 }
 
 
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreView() {
-    SunSeekTheme {
-        LoginScreen(
-            onLoginSuccess = {}, accountViewModel = AccountViewModel(),
-            locationViewModel = LocationViewModel(), onForgetPasswordRequestSuccess = {},
-        )
-    }
-}
+
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -586,15 +574,4 @@ fun OutlinedTextFieldFloatedLabel(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun OutlinedTextFieldFloatedLabelPreview() {
-    SunSeekTheme {
-        OutlinedTextFieldFloatedLabel(
-            labelText = "Label",
-            value = "Value",
-            onValueChange = {},
-        )
-    }
-}
 

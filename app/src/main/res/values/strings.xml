@@ -119,4 +119,8 @@ Lượng mưa ảnh hưởng trực tiếp đến tầm nhìn hoàng hôn:\n
     <string name="did_received_code">Không nhận được mã?</string>
     <string name="resend">Gửi lại</string>
     <string name="server_no_response">Máy chủ không phản hồi trong thời gian chờ, vui lòng thử lại sau</string>
+    <string name="unable_upload_location">Tải địa chỉ lên server không thành công. Vui lòng thử lại!!!</string>
+    <string name="logout_success">Đăng xuất thành công</string>
+    <string name="logout_falied_network">Đăng xuất thất bại (Lỗi mạng)</string>
+    <string name="logout_failed_app">Đăng xuất thất bại (Lỗi cục bộ)</string>
 </resources>

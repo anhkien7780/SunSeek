@@ -1,6 +1,7 @@
 package com.example.sunseek.viewmodel
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -14,7 +15,6 @@ import com.example.sunseek.network.OpenWeatherApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import android.net.Uri
 
 
 class OpenWeatherViewModel : ViewModel() {
@@ -30,14 +30,11 @@ class OpenWeatherViewModel : ViewModel() {
         viewModelScope.launch {
             _weatherUIState.value = LoadingUIState.Loading
             try {
-                Log.d("WeatherFetch", "Bắt đầu gọi API thời tiết và chất lượng không khí...")
 
                 val weather =
                     OpenWeatherApi.openWeatherApiService.getWeatherByCoordinates(lat, lon, apiKey)
-                Log.d("WeatherFetch", "Dữ liệu thời tiết nhận được: $weather")
 
                 val air = OpenWeatherApi.openWeatherApiService.getAirQuality(lat, lon, apiKey)
-                Log.d("WeatherFetch", "Dữ liệu chất lượng không khí nhận được: $air")
 
                 val temp = weather.main.temp
                 val humidity = weather.main.humidity
@@ -46,12 +43,6 @@ class OpenWeatherViewModel : ViewModel() {
                 val description = weather.weather.firstOrNull()?.description ?: "N/A"
                 val aqi = air.list.firstOrNull()?.main?.aqi ?: -1
 
-                Log.d("WeatherValues", "Temp: $temp")
-                Log.d("WeatherValues", "Humidity: $humidity")
-                Log.d("WeatherValues", "Cloud: $cloud")
-                Log.d("WeatherValues", "Rain: $rain")
-                Log.d("WeatherValues", "Description: $description")
-                Log.d("WeatherValues", "AQI: $aqi")
 
                 _weatherReport.value = WeatherReport(
                     temp = temp,

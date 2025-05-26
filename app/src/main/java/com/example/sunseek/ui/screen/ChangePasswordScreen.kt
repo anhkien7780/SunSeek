@@ -36,12 +36,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.LoadingUIState
-import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.ForgetPasswordViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -177,16 +174,5 @@ fun ChangePasswordScreen(
                 forgetPasswordViewModel.setIdle()
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun ChangePasswordScreenPreview() {
-    SunSeekTheme {
-        ChangePasswordScreen(
-            onBack = {},
-            forgetPasswordViewModel = viewModel()
-        ) { }
     }
 }

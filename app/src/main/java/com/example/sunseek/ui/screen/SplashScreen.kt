@@ -20,11 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
-import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.ServerViewModel
 import kotlinx.serialization.Serializable
 
@@ -107,14 +104,4 @@ fun TimeOutBody() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SplashScreenPreview() {
-    SunSeekTheme {
-        SplashScreen(
-            onNavigate = {},
-            modifier = Modifier,
-            serverViewModel = viewModel(),
-            onRefresh = {})
-    }
-}
+

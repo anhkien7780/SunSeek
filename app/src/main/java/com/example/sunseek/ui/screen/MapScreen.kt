@@ -47,16 +47,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.LoadingUIState
-import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.LocationViewModel
 import com.example.sunseek.viewmodel.MapViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -346,18 +342,5 @@ fun MapScreen(
             }
         }
 
-    }
-}
-
-
-@Preview
-@Composable
-fun SelectLocationScreenPreview() {
-    SunSeekTheme {
-        MapScreen(
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(
-                LocalContext.current
-            ), locationViewModel = viewModel(), onBack = {}, mapViewModel = viewModel()
-        )
     }
 }

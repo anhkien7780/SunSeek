@@ -1,7 +1,6 @@
 package com.example.sunseek.viewmodel
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -72,7 +71,6 @@ class AccountViewModel : ViewModel() {
                 val userSessionCookie =
                     setCookieHeader?.split(";")?.find { it.trim().startsWith("user-session=") }
                 userSessionCookie?.let {
-                    Log.d("Cookie received: ", it)
                     saveCookie(context, it)
                 }
                 return true
@@ -104,15 +102,18 @@ class AccountViewModel : ViewModel() {
             val response = SunSeekApi.retrofitService.logout()
             if (response.isSuccessful) {
                 clearCookie(MyApplication.appContext)
-                Toast.makeText(context, "Đăng xuất thành công", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context,
+                    context.getString(R.string.logout_success), Toast.LENGTH_SHORT).show()
                 _loadingUIState.value = LoadingUIState.Idle
                 return true
             }
-            Toast.makeText(context, "Đăng xuất thất bại (Lỗi mạng)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.logout_falied_network), Toast.LENGTH_SHORT).show()
             _loadingUIState.value = LoadingUIState.Idle
             return false
         } catch (ex: Exception) {
-            Toast.makeText(context, "Đăng xuất thất bại (Lỗi cục bộ)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.logout_failed_app), Toast.LENGTH_SHORT).show()
             ex.printStackTrace()
             return false
         } finally {

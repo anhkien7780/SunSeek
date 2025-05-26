@@ -3,7 +3,6 @@ package com.example.sunseek.viewmodel
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
@@ -74,7 +73,6 @@ class LocationViewModel : ViewModel() {
             val response = SunSeekApi.retrofitService.getListLocation()
             if (response.isSuccessful) {
                 _listLocation.value = response.body()!!
-                Log.d("List location received", "${_listLocation.value}")
                 _loadingUIState.value = LoadingUIState.Success
             } else {
                 Toast.makeText(
@@ -109,10 +107,9 @@ class LocationViewModel : ViewModel() {
                 _loadingUIState.value = LoadingUIState.Failed
                 Toast.makeText(
                     context,
-                    "Tải địa chỉ lên server không thành công. Vui lòng thử lại!!!",
+                    context.getString(R.string.unable_upload_location),
                     Toast.LENGTH_SHORT
                 ).show()
-                Log.d("Respond", respond.toString())
             }
         } catch (e: Exception) {
             e.printStackTrace()

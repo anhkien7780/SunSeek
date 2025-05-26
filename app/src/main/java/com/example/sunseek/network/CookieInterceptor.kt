@@ -1,7 +1,6 @@
 package com.example.sunseek.network
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -19,7 +18,6 @@ class CookieInterceptor(private val context: Context): Interceptor {
                 addHeader("Cookie", it)
             }
         }.build()
-        Log.d("CookieInterceptor", "Cookie: $cookie")
         return chain.proceed(newRequest)
     }
 

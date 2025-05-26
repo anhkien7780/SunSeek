@@ -36,14 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sunseek.R
 import com.example.sunseek.model.EmailRequest
 import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.VerifyCodeRequest
-import com.example.sunseek.ui.theme.SunSeekTheme
 import com.example.sunseek.viewmodel.AccountViewModel
 import com.example.sunseek.viewmodel.ForgetPasswordViewModel
 import kotlinx.coroutines.launch
@@ -172,14 +169,3 @@ fun VerifyCodeScreen(
     }
 }
 
-@Preview
-@Composable
-fun VerifyCodeScreenPreview() {
-    SunSeekTheme {
-        VerifyCodeScreen(
-            onBack = {}, onVerifySuccess = {},
-            forgetPasswordViewModel = viewModel(),
-            accountViewModel = viewModel(),
-        )
-    }
-}

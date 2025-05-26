@@ -1,7 +1,6 @@
 package com.example.sunseek.viewmodel
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.example.sunseek.R
@@ -53,7 +52,6 @@ class ForgetPasswordViewModel : ViewModel() {
     suspend fun changePasswordRequest(context: Context, newPassword: String) {
         try {
             _loadingUIState.value = LoadingUIState.Loading
-            Log.d("ResetPasswordRequest", "newPassword=${newPassword}, code=${code.value}, email=${email.value}")
 
             val response = SunSeekApi.retrofitService.resetPasswordRequest(resetInfo = ResetPasswordRequest(
                 newPassword = newPassword, code = code.value!!, email = email.value!!

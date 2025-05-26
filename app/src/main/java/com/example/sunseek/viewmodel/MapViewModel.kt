@@ -1,11 +1,11 @@
 package com.example.sunseek.viewmodel
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sunseek.BuildConfig
+import com.example.sunseek.R
 import com.example.sunseek.model.LoadingUIState
 import com.example.sunseek.model.Location
 import com.example.sunseek.network.GeocodingApi
@@ -34,7 +34,7 @@ class MapViewModel : ViewModel() {
             val response =
                 GeocodingApi.geocodingApiService.getCoordinates(address = address, geocodeAPIKey)
             if (response.features.isEmpty()) {
-                Toast.makeText(context, "Danh sách rỗng", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.empty_list), Toast.LENGTH_SHORT).show()
                 _isLoading.value = LoadingUIState.Failed
             } else {
                 val properties = response.features[0].properties
@@ -43,7 +43,6 @@ class MapViewModel : ViewModel() {
                     latitude = properties.lat,
                     name = properties.formattedName
                 )
-                Log.d("Địa điểm nhận được: ", _location.value.toString())
                 _isCurrentLocation.value = false
                 onGetLocationSuccess(_location.value!!)
                 _isLoading.value = LoadingUIState.Success
@@ -65,7 +64,7 @@ class MapViewModel : ViewModel() {
                 apiKey = geocodeAPIKey
             )
             if (response.features.isEmpty()) {
-                Toast.makeText(context, "Danh sách rỗng", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.empty_list), Toast.LENGTH_SHORT).show()
                 _isLoading.value = LoadingUIState.Failed
             } else {
                 val properties = response.features[0].properties
